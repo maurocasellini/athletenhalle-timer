@@ -1,7 +1,7 @@
 import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary } from './modes.js';
 import { Engine } from './engine.js';
 import { cue, speak, unlockAudio } from './audio.js';
-import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
+import { keepAwake, keepAwakeOnLoad, allowSleep, onWakeChange } from './wakelock.js';
 import { settings, configs, favorites, history } from './store.js';
 import { I } from './icons.js';
 
@@ -72,6 +72,7 @@ function armWake() {
   if (settings.get().keepAwake) keepAwake();
 }
 document.addEventListener('pointerdown', armWake, { once: true, passive: true });
+if (settings.get().keepAwake) keepAwakeOnLoad();
 
 // ---------- router ----------
 let current = null; // { mode, cfg, title }
@@ -179,7 +180,7 @@ function bindWakeNote() {
     el.innerHTML =
       m === 'off'
         ? settings.get().keepAwake
-          ? 'Bildschirm-Sperre: wird beim ersten Tippen deaktiviert'
+          ? 'Einmal tippen – dann bleibt der Bildschirm an'
           : 'Bildschirm darf sich ausschalten'
         : `<span class="dot on"></span> Bildschirm bleibt an`;
   });

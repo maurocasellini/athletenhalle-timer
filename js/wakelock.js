@@ -58,6 +58,15 @@ export async function keepAwake() {
   enableVideo();
 }
 
+// Try right on page load. Native wake lock needs no tap in Chrome/Android (and in most
+// current Safari versions); the video fallback cannot start without a tap, so the
+// pointerdown listener below finishes the job on the first touch.
+export async function keepAwakeOnLoad() {
+  wanted = true;
+  if (document.hidden) return;
+  await requestNative();
+}
+
 export function allowSleep() {
   wanted = false;
   if (sentinel) sentinel.release().catch(() => {});
