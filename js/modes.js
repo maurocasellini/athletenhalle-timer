@@ -2,21 +2,22 @@
 // A segment: { kind, label, dur (ms, Infinity = open), up (display counts up), round, rounds, set, sets, color }
 
 export const KIND = {
-  prep: { label: 'Vorbereiten', color: '#FFD60A', speak: 'Bereit machen' },
-  work: { label: 'Arbeit', color: '#FF9F0A', speak: 'Los' },
-  rest: { label: 'Pause', color: '#0A84FF', speak: 'Pause' },
-  setrest: { label: 'Satzpause', color: '#BF5AF2', speak: 'Satzpause' },
-  cool: { label: 'Cool-down', color: '#64D2FF', speak: 'Cool down' },
-  up: { label: 'Läuft', color: '#FF9F0A', speak: 'Los' },
+  prep: { label: 'Bereit', color: '#FFB020', speak: 'Bereit machen' },
+  work: { label: 'Arbeit', color: '#C6FF00', speak: 'Los' },
+  rest: { label: 'Pause', color: '#2EC5FF', speak: 'Pause' },
+  setrest: { label: 'Satzpause', color: '#A77BFF', speak: 'Satzpause' },
+  cool: { label: 'Cool-down', color: '#5EF2C8', speak: 'Cool down' },
+  up: { label: 'Go', color: '#C6FF00', speak: 'Los' },
 };
 
-export const STEP_COLORS = ['#FF9F0A', '#30D158', '#FF453A', '#0A84FF', '#BF5AF2', '#FFD60A', '#64D2FF', '#FF375F'];
+export const STEP_COLORS = ['#C6FF00', '#FF5A36', '#FF3D8B', '#FFB020', '#A77BFF', '#5EF2C8', '#2EC5FF', '#FFFFFF'];
 
 const t = (id, label, extra = {}) => ({ id, type: 'time', label, ...extra });
 const n = (id, label, extra = {}) => ({ id, type: 'count', label, min: 1, max: 99, ...extra });
 
 export const MODES = {
   tabata: {
+    tag: '20/10',
     title: 'Tabata',
     sub: 'Arbeit / Pause im Wechsel',
     icon: 'tabata',
@@ -38,6 +39,7 @@ export const MODES = {
     ],
   },
   runden: {
+    tag: 'EMOM',
     title: 'Runden',
     sub: 'EMOM · E2MOM · Runden',
     icon: 'runden',
@@ -57,6 +59,7 @@ export const MODES = {
     ],
   },
   stoppuhr: {
+    tag: '0:00',
     title: 'Stoppuhr',
     sub: 'Zeit messen mit Runden',
     icon: 'stoppuhr',
@@ -64,6 +67,7 @@ export const MODES = {
     fields: [t('prep', 'Vorbereiten', { min: 0 })],
   },
   intervalle: {
+    tag: 'MIX',
     title: 'Intervalle',
     sub: 'Eigene Abläufe bauen',
     icon: 'intervalle',
@@ -76,16 +80,17 @@ export const MODES = {
           name: 'Zirkel',
           repeats: 3,
           steps: [
-            { name: 'Squats', dur: 40, kind: 'work', color: '#FF9F0A' },
-            { name: 'Pause', dur: 20, kind: 'rest', color: '#0A84FF' },
-            { name: 'Push-ups', dur: 40, kind: 'work', color: '#30D158' },
-            { name: 'Pause', dur: 20, kind: 'rest', color: '#0A84FF' },
+            { name: 'Squats', dur: 40, kind: 'work', color: '#C6FF00' },
+            { name: 'Pause', dur: 20, kind: 'rest', color: '#2EC5FF' },
+            { name: 'Push-ups', dur: 40, kind: 'work', color: '#FF5A36' },
+            { name: 'Pause', dur: 20, kind: 'rest', color: '#2EC5FF' },
           ],
         },
       ],
     },
   },
   countdown: {
+    tag: '5:00',
     title: 'Countdown',
     sub: 'Einfacher Timer',
     icon: 'countdown',
@@ -99,6 +104,7 @@ export const MODES = {
     ],
   },
   amrap: {
+    tag: 'AMRAP',
     title: 'AMRAP',
     sub: 'So viele Runden wie möglich',
     icon: 'amrap',
@@ -111,6 +117,7 @@ export const MODES = {
     ],
   },
   fortime: {
+    tag: 'FT',
     title: 'For Time',
     sub: 'So schnell wie möglich',
     icon: 'fortime',

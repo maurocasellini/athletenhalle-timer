@@ -105,23 +105,71 @@ function go(path) {
 window.addEventListener('hashchange', route);
 
 // ---------- home ----------
+function weekStats(hist) {
+  const now = new Date();
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const week = hist.filter((h) => h.at >= monday.getTime());
+  const days = new Set(hist.map((h) => new Date(h.at).toDateString()));
+  let streak = 0;
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1); // today not done yet keeps the streak
+  while (days.has(d.toDateString())) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return { count: week.length, min: Math.round(week.reduce((a, h) => a + (h.dur || 0), 0) / 60000), streak };
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 5) return 'Nachtschicht';
+  if (h < 11) return 'Guten Morgen';
+  if (h < 17) return 'Let’s go';
+  if (h < 22) return 'Guten Abend';
+  return 'Spät dran';
+}
+
 function renderHome() {
   document.body.className = 'page-home';
   const favs = favorites.all();
-  const hist = history.all().slice(0, 5);
+  const allHist = history.all();
+  const hist = allHist.slice(0, 5);
+  const st = weekStats(allHist);
+  const name = (settings.get().name || '').trim();
+  const last = allHist.find((h) => h.cfg && MODES[h.mode]);
+  const date = new Date().toLocaleDateString('de-CH', { weekday: 'long', day: 'numeric', month: 'long' });
   app.innerHTML = `
     <header class="topbar">
       <button class="round-btn" data-act="settings" aria-label="Einstellungen">${I.user}</button>
-      <h1>Zeitschaltuhr</h1>
+      <span class="wordmark">ZEITSCHALTUHR</span>
       <button class="round-btn" data-act="share-app" aria-label="Teilen">${I.share}</button>
     </header>
     <main class="home">
+      <section class="hero">
+        <p class="eyebrow">${esc(date)}</p>
+        <h1 class="display">${esc(greeting())}${name ? `,<br><em>${esc(name)}</em>` : '<em>.</em>'}</h1>
+        <div class="stats">
+          <div class="stat"><b>${st.count}</b><span>Workouts<br>diese Woche</span></div>
+          <div class="stat"><b>${st.min}</b><span>Minuten<br>diese Woche</span></div>
+          <div class="stat ${st.streak ? 'hot' : ''}"><b>${st.streak}</b><span>Tage<br>Streak</span></div>
+        </div>
+      </section>
+
+      ${
+        last
+          ? `<button class="quick" data-act="quick-last">
+          <span class="quick-text"><small>Nochmal</small><b>${esc(last.title)}</b><span>${fmtTotal(safeSummary(last.mode, last.cfg).total)} · ${esc(MODES[last.mode].title)}</span></span>
+          <span class="quick-play">${I.play}</span>
+        </button>`
+          : ''
+      }
+
       <div class="grid">
         ${MODE_ORDER.map(
           (m, i) => `
-          <a class="card mode-card ${i === MODE_ORDER.length - 1 && MODE_ORDER.length % 2 ? 'wide' : ''}" href="#/m/${m}">
+          <a class="mode-card ${i === MODE_ORDER.length - 1 && MODE_ORDER.length % 2 ? 'wide' : ''}" href="#/m/${m}">
+            <span class="mode-tag" aria-hidden="true">${MODES[m].tag}</span>
             <span class="mode-icon ${m === 'tabata' ? 'double' : ''}">${I[MODES[m].icon]}</span>
-            <span class="chev">${I.chevron}</span>
             <span class="mode-title">${MODES[m].title}</span>
             <span class="mode-sub">${MODES[m].sub}</span>
           </a>`,
@@ -145,7 +193,7 @@ function renderHome() {
                   </div>`;
                 })
                 .join('')}</div>`
-            : `<p class="empty">Speichere Workouts mit dem ${I.star} im Editor – dann liegen sie hier für den Schnellstart.</p>`
+            : `<p class="empty">Workout im Editor bauen, ${I.star} tippen – liegt dann hier für den Schnellstart.</p>`
         }
       </section>
 
@@ -494,6 +542,9 @@ function openSettings() {
     `<div class="sheet-head"><span></span><b>Einstellungen</b><button class="link strong" data-act="sheet-close">Fertig</button></div>
      <div class="sheet-body">
        <div class="card group">
+         <div class="row"><span class="row-label">Dein Name</span><input class="name-input" data-set="name" value="${esc(st.name || '')}" placeholder="für die Begrüssung" maxlength="24" autocomplete="given-name"></div>
+       </div>
+       <div class="card group">
          ${tg('sound', 'Signaltöne')}
          ${tg('voice', 'Sprachansage', 'Sagt Übung / Pause an')}
          ${tg('vibrate', 'Vibration', 'Nur Android')}
@@ -514,12 +565,20 @@ function openSettings() {
       sheet.addEventListener('change', (e) => {
         const k = e.target.dataset.set;
         if (!k) return;
-        settings.set({ [k]: e.target.type === 'checkbox' ? e.target.checked : +e.target.value });
+        settings.set({ [k]: e.target.type === 'checkbox' ? e.target.checked : k === 'name' ? e.target.value.trim() : +e.target.value });
         if (k === 'keepAwake') e.target.checked ? keepAwake() : allowSleep();
         if (k === 'soundWhenMuted') unlockAudio();
       });
       sheet.addEventListener('input', (e) => {
         if (e.target.dataset.set === 'volume') settings.set({ volume: +e.target.value });
+        if (e.target.dataset.set === 'name') {
+          settings.set({ name: e.target.value.trim() });
+          if (document.body.className === 'page-home') {
+            const h = document.querySelector('.display');
+            const n = e.target.value.trim();
+            if (h) h.innerHTML = `${esc(greeting())}${n ? `,<br><em>${esc(n)}</em>` : '<em>.</em>'}`;
+          }
+        }
       });
     },
   );
@@ -532,6 +591,10 @@ const actions = {
   home: () => go('/'),
   settings: openSettings,
   'sheet-close': closeSheet,
+  'quick-last': () => {
+    const h = history.all().find((x) => x.cfg && MODES[x.mode]);
+    if (h) startRun(h.mode, { ...MODES[h.mode].defaults, ...h.cfg }, h.title);
+  },
   'share-app': () => shareLink(location.origin + '/', 'Zeitschaltuhr – Workout Timer'),
   'test-sound': () => {
     unlockAudio();
@@ -773,6 +836,7 @@ function renderRun() {
   app.innerHTML = `
     <div class="run" id="run">
       <div class="run-bg"></div>
+      <div class="run-drain" id="drain"></div>
       <header class="run-top">
         <button class="round-btn glass" data-run="close" aria-label="Beenden">${I.close}</button>
         <div class="run-title">
@@ -786,23 +850,17 @@ function renderRun() {
       </header>
 
       <div class="run-main" data-run="toggle-area">
-        <div class="phase" id="phase"></div>
-        <div class="ring-wrap">
-          <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
-            <circle class="ring-bg" cx="100" cy="100" r="92"/>
-            <circle class="ring-fg" id="ring" cx="100" cy="100" r="92" pathLength="1000" stroke-dasharray="1000" stroke-dashoffset="0"/>
-          </svg>
-          <div class="clock">
-            <div class="time" id="time">0:00</div>
-            <div class="time-sub" id="time-sub"></div>
-            <div class="paused-tag" id="paused-tag">Pausiert · tippen zum Fortsetzen</div>
-          </div>
-        </div>
         <div class="meta" id="meta"></div>
-        <div class="next" id="next"></div>
+        <div class="phase" id="phase"></div>
+        <div class="clock">
+          <div class="time" id="time">0:00</div>
+          <div class="time-sub" id="time-sub"></div>
+        </div>
+        <div class="paused-tag" id="paused-tag">Pause · tippen zum Weitermachen</div>
       </div>
+      <div class="next" id="next"></div>
 
-      ${program.counter ? `<button class="counter-btn" data-run="round"><span class="counter-n" id="counter">0</span><span class="counter-l">Runden · tippen für +1</span><span class="counter-split" id="split"></span></button>` : ''}
+      ${program.counter ? `<button class="counter-btn" data-run="round"><span class="counter-n" id="counter">0</span><span class="counter-l">Runden</span><span class="counter-split" id="split"></span></button>` : ''}
       ${isStopwatch ? `<div class="laps" id="laps"></div>` : ''}
 
       <div class="total ${total === Infinity ? 'hidden' : ''}">
@@ -836,7 +894,7 @@ function renderRun() {
     phase: $('phase'),
     time: $('time'),
     timeSub: $('time-sub'),
-    ring: $('ring'),
+    drain: $('drain'),
     meta: $('meta'),
     next: $('next'),
     counter: $('counter'),
@@ -860,7 +918,13 @@ function renderRun() {
 
   engine = new Engine(program, {
     segment: onSegment,
-    count: (n) => cue.count(n),
+    count: (n) => {
+      cue.count(n);
+      // pulse the digits on 3-2-1
+      runView.time.classList.remove('pulse');
+      void runView.time.offsetWidth;
+      runView.time.classList.add('pulse');
+    },
     halfway: (s) => {
       if (!settings.get().halfway) return;
       cue.halfway();
@@ -937,25 +1001,35 @@ function updateRun() {
   setHTML(v.timeSub, 'sub', sub);
   v.time.classList.toggle('long', main.length > 5);
 
-  // ring
+  // the colour drains from the top as the segment runs (count-up: one sweep per minute)
   let frac;
   if (seg.dur === Infinity) frac = (el % 60000) / 60000;
   else frac = clamp(el / seg.dur, 0, 1);
-  const off = seg.up ? 1000 - frac * 1000 : frac * 1000;
-  v.ring.style.strokeDashoffset = off.toFixed(1);
+  v.drain.style.transform = `scaleY(${frac.toFixed(4)})`;
+  v.root.classList.toggle('final', !seg.up && seg.dur !== Infinity && seg.dur - el <= 3000 && seg.dur >= 5000);
 
   setHTML(v.phase, 'phase', esc(seg.label));
+  v.phase.classList.toggle('long', seg.label.length > 9);
   setHTML(v.meta, 'meta', segMeta(seg));
 
   const nx = e.segs[e.idx + 1];
-  setHTML(v.next, 'next', nx ? `<span>Als Nächstes</span> <b style="color:${nx.color}">${esc(nx.label)}</b> ${nx.dur !== Infinity ? fmtTotal(nx.dur) : ''}` : e.p.laps || seg.up ? '' : '<span>Letzter Abschnitt</span>');
+  setHTML(
+    v.next,
+    'next',
+    nx
+      ? `<i style="background:${nx.color}"></i><span>Danach</span><b>${esc(nx.label)}</b><em>${nx.dur !== Infinity ? fmtTotal(nx.dur) : ''}</em>`
+      : e.p.laps || seg.up
+        ? ''
+        : '<i style="background:#fff"></i><span>Finale</span><b>Gib alles</b>',
+  );
+  v.next.classList.toggle('empty', !v.next.innerHTML);
 
   // counter / laps
   if (v.counter) {
     setHTML(v.counter, 'counter', String(e.rounds));
     const s = e.roundSplits;
     const lastSplit = s.length ? s[s.length - 1] - (s.length > 1 ? s[s.length - 2] : 0) : null;
-    setHTML(v.split, 'split', lastSplit != null ? `letzte Runde ${fmtUp(lastSplit)}` : '');
+    setHTML(v.split, 'split', lastSplit != null ? `letzte Runde ${fmtUp(lastSplit)} · tippen = +1` : 'tippen = +1 Runde');
   }
   if (v.laps) {
     const html = e.laps
@@ -988,11 +1062,12 @@ function onDone() {
   setTimeout(() => speak('Geschafft! Stark!'), 900);
   const e = engine;
   const dur = e.totalElapsed();
-  history.add({ mode: current.mode, title: current.title, dur, rounds: e.rounds || e.laps.length || 0 });
+  history.add({ mode: current.mode, title: current.title, cfg: current.cfg, dur, rounds: e.rounds || e.laps.length || 0 });
   updateRun();
   const v = runView;
   v.root.classList.add('finished');
-  v.root.style.setProperty('--phase', '#30D158');
+  v.root.style.setProperty('--phase', '#C6FF00');
+  v.drain.style.transform = 'scaleY(0)';
   const extra =
     e.rounds > 0
       ? `<div class="done-stat"><b>${e.rounds}</b><span>Runden</span></div>`
@@ -1002,7 +1077,8 @@ function onDone() {
   v.done.innerHTML = `
     <div class="done-card">
       <div class="done-emoji">${I.check}</div>
-      <h2>Geschafft!</h2>
+      <h2>Geschafft<span>.</span></h2>
+      <p class="done-sub">${esc(current.title)} · ${new Date().toLocaleDateString('de-CH', { weekday: 'long' })}</p>
       <div class="done-stats">
         <div class="done-stat"><b>${fmtUp(dur)}</b><span>Zeit</span></div>
         ${extra}

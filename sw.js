@@ -1,5 +1,5 @@
 // Offline support. Network-first so new deploys show up immediately; cache is the fallback.
-const CACHE = 'zeitschaltuhr-v2';
+const CACHE = 'zeitschaltuhr-v3';
 const ASSETS = [
   '/',
   '/index.html',
@@ -15,6 +15,10 @@ const ASSETS = [
   '/vendor/keepalive-media.js',
   '/icons/icon.svg',
   '/icons/icon-192.png',
+  '/fonts/barlow-condensed-latin-600-normal.woff2',
+  '/fonts/barlow-condensed-latin-700-italic.woff2',
+  '/fonts/barlow-condensed-latin-800-italic.woff2',
+  '/fonts/barlow-condensed-latin-900-italic.woff2',
 ];
 
 self.addEventListener('install', (e) => {
