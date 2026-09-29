@@ -1,5 +1,5 @@
 // Offline support. Network-first so new deploys show up immediately; cache is the fallback.
-const CACHE = 'zeitschaltuhr-v1';
+const CACHE = 'zeitschaltuhr-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -12,7 +12,7 @@ const ASSETS = [
   '/js/store.js',
   '/js/wakelock.js',
   '/js/icons.js',
-  '/vendor/NoSleep.min.js',
+  '/vendor/keepalive-media.js',
   '/icons/icon.svg',
   '/icons/icon-192.png',
 ];

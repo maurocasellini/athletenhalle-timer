@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS = {
   vibrate: true,
   volume: 0.9,
   keepAwake: true,
+  soundWhenMuted: false,
   halfway: true,
   bigDigits: true,
 };

@@ -1,7 +1,7 @@
 import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary } from './modes.js';
 import { Engine } from './engine.js';
 import { cue, speak, unlockAudio } from './audio.js';
-import { keepAwake, keepAwakeOnLoad, allowSleep, onWakeChange } from './wakelock.js';
+import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
 import { settings, configs, favorites, history } from './store.js';
 import { I } from './icons.js';
 
@@ -67,12 +67,8 @@ async function shareLink(url, title) {
   }
 }
 
-// Screen stays on across the whole app once the user touched it (browsers need a gesture).
-function armWake() {
-  if (settings.get().keepAwake) keepAwake();
-}
-document.addEventListener('pointerdown', armWake, { once: true, passive: true });
-if (settings.get().keepAwake) keepAwakeOnLoad();
+// Screen stays on across the whole app from the moment the page loads.
+if (settings.get().keepAwake) keepAwake();
 
 // ---------- router ----------
 let current = null; // { mode, cfg, title }
@@ -180,9 +176,9 @@ function bindWakeNote() {
     el.innerHTML =
       m === 'off'
         ? settings.get().keepAwake
-          ? 'Einmal tippen – dann bleibt der Bildschirm an'
+          ? '<span class="dot"></span> Einmal tippen – dann bleibt der Bildschirm an'
           : 'Bildschirm darf sich ausschalten'
-        : `<span class="dot on"></span> Bildschirm bleibt an`;
+        : `<span class="dot on"></span> Bildschirm bleibt immer an`;
   });
 }
 
@@ -501,7 +497,8 @@ function openSettings() {
          ${tg('sound', 'Signaltöne')}
          ${tg('voice', 'Sprachansage', 'Sagt Übung / Pause an')}
          ${tg('vibrate', 'Vibration', 'Nur Android')}
-         ${tg('keepAwake', 'Bildschirm immer an', 'Handy sperrt sich nicht')}
+         ${tg('keepAwake', 'Bildschirm immer an', 'Auch im Menü – im Timer sowieso immer')}
+         ${tg('soundWhenMuted', 'Ton trotz Stumm-Schalter', 'iPhone: stoppt dabei laufende Musik')}
          <div class="row"><span class="row-label">Lautstärke</span><input type="range" min="0.1" max="1" step="0.05" value="${st.volume}" data-set="volume" class="range"></div>
          <div class="row"><span class="row-label">Test</span><button class="ghost-btn" data-act="test-sound">${I.sound} Ton testen</button></div>
        </div>
@@ -519,6 +516,7 @@ function openSettings() {
         if (!k) return;
         settings.set({ [k]: e.target.type === 'checkbox' ? e.target.checked : +e.target.value });
         if (k === 'keepAwake') e.target.checked ? keepAwake() : allowSleep();
+        if (k === 'soundWhenMuted') unlockAudio();
       });
       sheet.addEventListener('input', (e) => {
         if (e.target.dataset.set === 'volume') settings.set({ volume: +e.target.value });

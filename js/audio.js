@@ -6,8 +6,9 @@ let master = null;
 
 export function unlockAudio() {
   try {
-    // iOS 17+: play even when the ring/silent switch is on
-    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+    // iOS 17+: 'ambient' mixes with music (Spotify keeps playing) but obeys the silent
+    // switch; 'playback' ignores the switch but interrupts other audio.
+    if (navigator.audioSession) navigator.audioSession.type = settings.get().soundWhenMuted ? 'playback' : 'ambient';
   } catch {}
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;

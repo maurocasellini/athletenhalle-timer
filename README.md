@@ -16,7 +16,9 @@ Workout-Timer als Web-App (PWA) für Handy, Tablet und Desktop. Keine Abhängigk
 
 ## Features
 
-- **Bildschirm bleibt an**: Screen Wake Lock API (iOS 16.4+, Android), Fallback per NoSleep.js. Wird nach App-Wechsel automatisch neu geholt.
+- **Bildschirm bleibt immer an** – ab Seitenaufruf, ohne Tippen. Zwei Mechanismen laufen parallel:
+  Screen Wake Lock API **und** ein unsichtbares, stummes Endlos-Video (Handys dimmen nie, solange ein Video läuft).
+  Ein Wächter prüft alle 3 s und nach jedem App-Wechsel nach. Musik (Spotify etc.) läuft ungestört weiter.
 - **Exakte Zeit**: Die Zeit wird aus Zeitstempeln berechnet, nicht aus Ticks. Nach dem Sperren des Handys stimmt der Timer weiterhin.
 - Signaltöne (3-2-1, Start, Pause, Halbzeit, Ende), deutsche Sprachansage, Vibration
 - Favoriten, Presets, Verlauf, Workouts per Link teilen
