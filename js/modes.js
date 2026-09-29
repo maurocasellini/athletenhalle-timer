@@ -2,15 +2,15 @@
 // A segment: { kind, label, dur (ms, Infinity = open), up (display counts up), round, rounds, set, sets, color }
 
 export const KIND = {
-  prep: { label: 'Bereit', color: '#FFB020', speak: 'Bereit machen' },
-  work: { label: 'Arbeit', color: '#C6FF00', speak: 'Los' },
-  rest: { label: 'Pause', color: '#2EC5FF', speak: 'Pause' },
-  setrest: { label: 'Satzpause', color: '#A77BFF', speak: 'Satzpause' },
-  cool: { label: 'Cool-down', color: '#5EF2C8', speak: 'Cool down' },
-  up: { label: 'Go', color: '#C6FF00', speak: 'Los' },
+  prep: { label: 'Bereit', color: '#E8893A', speak: 'Bereit machen' },
+  work: { label: 'Arbeit', color: '#F4C430', speak: 'Los' },
+  rest: { label: 'Pause', color: '#5B8FD9', speak: 'Pause' },
+  setrest: { label: 'Satzpause', color: '#9A86E0', speak: 'Satzpause' },
+  cool: { label: 'Cool-down', color: '#5FB8A6', speak: 'Cool down' },
+  up: { label: 'Go', color: '#F4C430', speak: 'Los' },
 };
 
-export const STEP_COLORS = ['#C6FF00', '#FF5A36', '#FF3D8B', '#FFB020', '#A77BFF', '#5EF2C8', '#2EC5FF', '#FFFFFF'];
+export const STEP_COLORS = ['#F4C430', '#E8643A', '#E0578A', '#E8893A', '#9A86E0', '#5FB8A6', '#5B8FD9', '#EDEDED'];
 
 const t = (id, label, extra = {}) => ({ id, type: 'time', label, ...extra });
 const n = (id, label, extra = {}) => ({ id, type: 'count', label, min: 1, max: 99, ...extra });
@@ -80,10 +80,10 @@ export const MODES = {
           name: 'Zirkel',
           repeats: 3,
           steps: [
-            { name: 'Squats', dur: 40, kind: 'work', color: '#C6FF00' },
-            { name: 'Pause', dur: 20, kind: 'rest', color: '#2EC5FF' },
-            { name: 'Push-ups', dur: 40, kind: 'work', color: '#FF5A36' },
-            { name: 'Pause', dur: 20, kind: 'rest', color: '#2EC5FF' },
+            { name: 'Squats', dur: 40, kind: 'work', color: '#F4C430' },
+            { name: 'Pause', dur: 20, kind: 'rest', color: '#5B8FD9' },
+            { name: 'Push-ups', dur: 40, kind: 'work', color: '#E8643A' },
+            { name: 'Pause', dur: 20, kind: 'rest', color: '#5B8FD9' },
           ],
         },
       ],

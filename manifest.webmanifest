@@ -1,6 +1,6 @@
 {
-  "name": "Zeitschaltuhr – Workout Timer",
-  "short_name": "Timer",
+  "name": "Athletenhalle Gym Timer",
+  "short_name": "Athletenhalle",
   "description": "Tabata, Runden, Stoppuhr, Intervalle, Countdown, AMRAP, For Time.",
   "start_url": "/",
   "scope": "/",

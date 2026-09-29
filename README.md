@@ -1,4 +1,8 @@
-# Zeitschaltuhr – Workout Timer
+# Athletenhalle Gym Timer
+
+Workout-Timer für die [Athletenhalle by Bro Performance](https://broperformance.li), Vaduz.
+
+**Logo:** `brand/logo.png` ablegen (transparenter Hintergrund, helle Version für dunklen Grund). Solange keine Datei da ist, zeigt die App den Schriftzug ATHLETENHALLE.
 
 Workout-Timer als Web-App (PWA) für Handy, Tablet und Desktop. Keine Abhängigkeiten, kein Build: reines HTML/CSS/JS, läuft direkt auf Vercel.
 

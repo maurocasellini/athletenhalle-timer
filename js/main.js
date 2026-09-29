@@ -141,7 +141,7 @@ function renderHome() {
   app.innerHTML = `
     <header class="topbar">
       <button class="round-btn" data-act="settings" aria-label="Einstellungen">${I.user}</button>
-      <span class="wordmark">ZEITSCHALTUHR</span>
+      <span class="wordmark"><img class="brand-logo" src="/brand/logo.png" alt="Athletenhalle" onerror="this.remove()"><span>ATHLETENHALLE</span></span>
       <button class="round-btn" data-act="share-app" aria-label="Teilen">${I.share}</button>
     </header>
     <main class="home">
@@ -595,7 +595,7 @@ const actions = {
     const h = history.all().find((x) => x.cfg && MODES[x.mode]);
     if (h) startRun(h.mode, { ...MODES[h.mode].defaults, ...h.cfg }, h.title);
   },
-  'share-app': () => shareLink(location.origin + '/', 'Zeitschaltuhr – Workout Timer'),
+  'share-app': () => shareLink(location.origin + '/', 'Athletenhalle Gym Timer'),
   'test-sound': () => {
     unlockAudio();
     cue.work();
@@ -657,7 +657,7 @@ const actions = {
   },
   'share-cfg': () => {
     const url = `${location.origin}/#/m/${editMode}?c=${encodeCfg(editCfg)}`;
-    shareLink(url, `${MODES[editMode].title} – Zeitschaltuhr`);
+    shareLink(url, `${MODES[editMode].title} – Athletenhalle Gym Timer`);
   },
   start: () => startRun(editMode, editCfg, MODES[editMode].title),
 
@@ -1066,7 +1066,7 @@ function onDone() {
   updateRun();
   const v = runView;
   v.root.classList.add('finished');
-  v.root.style.setProperty('--phase', '#C6FF00');
+  v.root.style.setProperty('--phase', '#F4C430');
   v.drain.style.transform = 'scaleY(0)';
   const extra =
     e.rounds > 0
@@ -1076,6 +1076,7 @@ function onDone() {
         : '';
   v.done.innerHTML = `
     <div class="done-card">
+      <img class="done-logo" src="/brand/logo.png" alt="" onerror="this.remove()">
       <div class="done-emoji">${I.check}</div>
       <h2>Geschafft<span>.</span></h2>
       <p class="done-sub">${esc(current.title)} · ${new Date().toLocaleDateString('de-CH', { weekday: 'long' })}</p>
