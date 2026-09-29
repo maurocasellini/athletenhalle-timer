@@ -3,14 +3,14 @@
 
 export const KIND = {
   prep: { label: 'Bereit', color: '#E8893A', speak: 'Bereit machen' },
-  work: { label: 'Arbeit', color: '#F4C430', speak: 'Los' },
+  work: { label: 'Arbeit', color: '#EFD814', speak: 'Los' },
   rest: { label: 'Pause', color: '#5B8FD9', speak: 'Pause' },
   setrest: { label: 'Satzpause', color: '#9A86E0', speak: 'Satzpause' },
   cool: { label: 'Cool-down', color: '#5FB8A6', speak: 'Cool down' },
-  up: { label: 'Go', color: '#F4C430', speak: 'Los' },
+  up: { label: 'Go', color: '#EFD814', speak: 'Los' },
 };
 
-export const STEP_COLORS = ['#F4C430', '#E8643A', '#E0578A', '#E8893A', '#9A86E0', '#5FB8A6', '#5B8FD9', '#EDEDED'];
+export const STEP_COLORS = ['#EFD814', '#E8643A', '#E0578A', '#E8893A', '#9A86E0', '#5FB8A6', '#5B8FD9', '#EDEDED'];
 
 const t = (id, label, extra = {}) => ({ id, type: 'time', label, ...extra });
 const n = (id, label, extra = {}) => ({ id, type: 'count', label, min: 1, max: 99, ...extra });
@@ -80,7 +80,7 @@ export const MODES = {
           name: 'Zirkel',
           repeats: 3,
           steps: [
-            { name: 'Squats', dur: 40, kind: 'work', color: '#F4C430' },
+            { name: 'Squats', dur: 40, kind: 'work', color: '#EFD814' },
             { name: 'Pause', dur: 20, kind: 'rest', color: '#5B8FD9' },
             { name: 'Push-ups', dur: 40, kind: 'work', color: '#E8643A' },
             { name: 'Pause', dur: 20, kind: 'rest', color: '#5B8FD9' },

@@ -1,5 +1,5 @@
 // Offline support. Network-first so new deploys show up immediately; cache is the fallback.
-const CACHE = 'athletenhalle-v4';
+const CACHE = 'athletenhalle-v5';
 const ASSETS = [
   '/',
   '/index.html',
@@ -13,7 +13,8 @@ const ASSETS = [
   '/js/wakelock.js',
   '/js/icons.js',
   '/vendor/keepalive-media.js',
-  '/icons/icon.svg',
+  '/icons/favicon.png',
+  '/brand/logo.png',
   '/icons/icon-192.png',
   '/fonts/barlow-condensed-latin-600-normal.woff2',
   '/fonts/barlow-condensed-latin-700-italic.woff2',

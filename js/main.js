@@ -1066,7 +1066,7 @@ function onDone() {
   updateRun();
   const v = runView;
   v.root.classList.add('finished');
-  v.root.style.setProperty('--phase', '#F4C430');
+  v.root.style.setProperty('--phase', '#EFD814');
   v.drain.style.transform = 'scaleY(0)';
   const extra =
     e.rounds > 0
