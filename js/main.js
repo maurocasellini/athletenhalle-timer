@@ -1,4 +1,4 @@
-import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary, intervalName, intervalColor, normalizeIntervals } from './modes.js';
+import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary, intervalName, intervalColor, normalizeIntervals, isLegacySample } from './modes.js';
 import { Engine } from './engine.js';
 import { cue, speak, unlockAudio, isIOS } from './audio.js';
 import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
@@ -246,8 +246,8 @@ function renderEditor(mode) {
   if (editMode !== mode || !editCfg) {
     editMode = mode;
     editCfg = configs.get(mode, def.defaults);
-    if (mode === 'intervalle' && editCfg.blocks) {
-      delete editCfg.intervals; // old block format wins over the merged-in defaults
+    if (mode === 'intervalle' && (editCfg.blocks || isLegacySample(editCfg))) {
+      if (editCfg.blocks) delete editCfg.intervals; // old block format wins over the merged-in defaults
       normalizeIntervals(editCfg);
       configs.set(mode, editCfg);
     }
@@ -277,6 +277,7 @@ function renderEditor(mode) {
           : ''
       }
       ${def.custom ? intervalEditor(editCfg) : fieldsEditor(def, editCfg)}
+      <button class="reset-link" data-act="reset-cfg">${I.restart} ${t('e.reset')}</button>
       <div class="spacer"></div>
     </main>
     <div class="start-bar">
@@ -662,6 +663,12 @@ const actions = {
     shareLink(url, `${MODES[editMode].title} – Athletenhalle Gym Timer`);
   },
   start: () => startRun(editMode, editCfg, MODES[editMode].title),
+  'reset-cfg': () => {
+    if (!confirm(t('e.resetConfirm'))) return;
+    editCfg = structuredClone(MODES[editMode].defaults);
+    saveEdit();
+    toast(t('e.resetDone'));
+  },
 
   // interval builder
   'iv-inc': (el) => changeInterval(el, +1),

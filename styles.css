@@ -446,3 +446,7 @@ svg { display: block; }
   .ferdi-pic { width: 34dvh; margin-bottom: 0; }
   .run.ferdi .time { font-size: min(30dvh, 20vw); }
 }
+
+.reset-link { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 22px auto 0; padding: 10px 14px; color: var(--dim); font-size: 13px; font-weight: 600; border-radius: 12px; }
+.reset-link svg { width: 14px; height: 14px; }
+.reset-link:active { background: var(--card); }

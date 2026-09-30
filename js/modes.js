@@ -229,7 +229,23 @@ export const intervalColor = (iv, i) => iv.color || STEP_COLORS[i % (STEP_COLORS
 
 // Configs saved before the interval redesign used blocks of work/rest steps: fold them into
 // the flat "interval + pause" list so old favourites keep working.
+// The very first version shipped a sample circuit (Squats / Push-ups). Configs that still
+// hold exactly that sample are reset to today's defaults instead of keeping those names.
+const LEGACY_SAMPLE = ['squats', 'push-ups'];
+export function isLegacySample(c) {
+  const names = c.blocks
+    ? ((c.blocks[0] && c.blocks[0].steps) || []).filter((s) => s.kind !== 'rest').map((s) => (s.name || '').toLowerCase())
+    : (c.intervals || []).map((iv) => (iv.name || '').toLowerCase());
+  return names.length === LEGACY_SAMPLE.length && names.every((n, i) => n === LEGACY_SAMPLE[i]);
+}
+
 export function normalizeIntervals(c) {
+  if (isLegacySample(c)) {
+    delete c.blocks;
+    c.intervals = structuredClone(MODES.intervalle.defaults.intervals);
+    c.repeats = MODES.intervalle.defaults.repeats;
+    return c;
+  }
   if (Array.isArray(c.intervals)) return c;
   const b = (c.blocks || [])[0];
   const intervals = [];
