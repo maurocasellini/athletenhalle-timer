@@ -22,6 +22,7 @@ const DEFAULT_SETTINGS = {
   volume: 0.9,
   keepAwake: true,
   ignoreMute: true,
+  ferdi: false,
   halfway: true,
   bigDigits: true,
 };

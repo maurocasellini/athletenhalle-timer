@@ -105,21 +105,6 @@ function go(path) {
 window.addEventListener('hashchange', route);
 
 // ---------- home ----------
-function weekStats(hist) {
-  const now = new Date();
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
-  const week = hist.filter((h) => h.at >= monday.getTime());
-  const days = new Set(hist.map((h) => new Date(h.at).toDateString()));
-  let streak = 0;
-  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1); // today not done yet keeps the streak
-  while (days.has(d.toDateString())) {
-    streak++;
-    d.setDate(d.getDate() - 1);
-  }
-  return { count: week.length, min: Math.round(week.reduce((a, h) => a + (h.dur || 0), 0) / 60000), streak };
-}
-
 function greeting() {
   const h = new Date().getHours();
   if (h < 5) return 'Nachtschicht';
@@ -134,7 +119,6 @@ function renderHome() {
   const favs = favorites.all();
   const allHist = history.all();
   const hist = allHist.slice(0, 5);
-  const st = weekStats(allHist);
   const name = (settings.get().name || '').trim();
   const last = allHist.find((h) => h.cfg && MODES[h.mode]);
   const date = new Date().toLocaleDateString('de-CH', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -148,12 +132,12 @@ function renderHome() {
       <section class="hero">
         <p class="eyebrow">${esc(date)}</p>
         <h1 class="display">${esc(greeting())}${name ? `,<br><em>${esc(name)}</em>` : '<em>.</em>'}</h1>
-        <div class="stats">
-          <div class="stat"><b>${st.count}</b><span>Workouts<br>diese Woche</span></div>
-          <div class="stat"><b>${st.min}</b><span>Minuten<br>diese Woche</span></div>
-          <div class="stat ${st.streak ? 'hot' : ''}"><b>${st.streak}</b><span>Tage<br>Streak</span></div>
-        </div>
       </section>
+
+      <button class="ferdi-toggle ${settings.get().ferdi ? 'on' : ''}" data-act="ferdi" aria-pressed="${settings.get().ferdi}">
+        <span class="ferdi-text"><b>Ferdi Modus</b><small>${settings.get().ferdi ? 'AN · Extrem-Ansagen bei jedem Wechsel' : 'Extrem-Ansagen: los · weiter · Pause · fertig'}</small></span>
+        <span class="ferdi-switch"><i></i></span>
+      </button>
 
       ${
         last
@@ -589,6 +573,14 @@ const actions = {
   home: () => go('/'),
   settings: openSettings,
   'sheet-close': closeSheet,
+  ferdi: () => {
+    const on = !settings.get().ferdi;
+    settings.set({ ferdi: on });
+    unlockAudio(); // the tap is a gesture: also unlocks speech on iOS
+    renderHome();
+    if (on) speak('Ferdi Modus an!', { hype: true });
+    else toast('Ferdi Modus aus');
+  },
   'quick-last': () => {
     const h = history.all().find((x) => x.cfg && MODES[x.mode]);
     if (h) startRun(h.mode, mergeCfg(h.mode, h.cfg), h.title);
@@ -800,6 +792,7 @@ function renderRun() {
         <button class="round-btn glass" data-run="close" aria-label="Beenden">${I.close}</button>
         <div class="run-title">
           <b>${esc(current.title)}</b>
+          ${settings.get().ferdi ? '<span class="ferdi-badge">Ferdi Modus</span>' : ''}
           <span class="wake-pill" id="wake-pill"></span>
         </div>
         <div class="topbar-right">
@@ -877,8 +870,12 @@ function renderRun() {
 
   engine = new Engine(program, {
     segment: onSegment,
-    count: (n) => {
-      cue.count(n);
+    count: (n, s) => {
+      const ferdi = settings.get().ferdi;
+      const nx = engine.segs[engine.idx + 1];
+      // Ferdi: 3 s before the next work phase starts, shout instead of the first two beeps
+      if (ferdi && n === 3 && nx && (nx.kind === 'work' || nx.kind === 'up')) speak('Ferdi, es geht gleich weiter!', { hype: true });
+      if (!(ferdi && n > 1 && nx && (nx.kind === 'work' || nx.kind === 'up'))) cue.count(n);
       // pulse the digits on 3-2-1
       runView.time.classList.remove('pulse');
       void runView.time.offsetWidth;
@@ -918,6 +915,10 @@ function onSegment(seg, idx, { silent }) {
   if (seg.kind === 'rest' || seg.kind === 'setrest') {
     const nx = segs[idx + 1];
     if (nx && nx.speakName) text = `Pause. Danach ${nx.label}`;
+  }
+  if (settings.get().ferdi) {
+    if (seg.kind === 'prep' || idx === 0) return setTimeout(() => speak('Ferdi, es geht los!', { hype: true }), 250);
+    if (seg.kind === 'rest' || seg.kind === 'setrest') return setTimeout(() => speak('Ferdi, Pause!', { hype: true }), 250);
   }
   // give the beep a moment before the voice
   setTimeout(() => speak(text), 350);
@@ -1018,7 +1019,7 @@ function updateRun() {
 function onDone() {
   if (!runView) return;
   cue.done();
-  setTimeout(() => speak('Geschafft! Stark!'), 900);
+  setTimeout(() => (settings.get().ferdi ? speak('Ferdi, wir sind fertig!', { hype: true }) : speak('Geschafft! Stark!')), 900);
   const e = engine;
   const dur = e.totalElapsed();
   history.add({ mode: current.mode, title: current.title, cfg: current.cfg, dur, rounds: e.rounds || e.laps.length || 0 });

@@ -1,5 +1,5 @@
 // Offline support. Network-first so new deploys show up immediately; cache is the fallback.
-const CACHE = 'athletenhalle-v7';
+const CACHE = 'athletenhalle-v8';
 const ASSETS = [
   '/',
   '/index.html',
