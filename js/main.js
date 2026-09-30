@@ -1,6 +1,6 @@
 import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary } from './modes.js';
 import { Engine } from './engine.js';
-import { cue, speak, unlockAudio } from './audio.js';
+import { cue, speak, unlockAudio, isIOS } from './audio.js';
 import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
 import { settings, configs, favorites, history } from './store.js';
 import { I } from './icons.js';
@@ -27,11 +27,11 @@ const fmtUp = (ms) => fmtSec(Math.floor(Math.max(0, ms) / 1000));
 const fmtTotal = (ms) => (ms === Infinity ? '∞' : fmtSec(ms / 1000));
 
 let toastTimer;
-function toast(msg) {
+function toast(msg, ms = 2200) {
   toastEl.textContent = msg;
   toastEl.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
 }
 
 function encodeCfg(obj) {
@@ -549,7 +549,7 @@ function openSettings() {
          ${tg('voice', 'Sprachansage', 'Sagt Übung / Pause an')}
          ${tg('vibrate', 'Vibration', 'Nur Android')}
          ${tg('keepAwake', 'Bildschirm immer an', 'Auch im Menü – im Timer sowieso immer')}
-         ${tg('soundWhenMuted', 'Ton trotz Stumm-Schalter', 'iPhone: stoppt dabei laufende Musik')}
+         ${tg('ignoreMute', 'Ton auch bei Stumm-Schalter', 'iPhone: Lautstärke-Tasten regeln. Aus = Ton folgt dem Schalter')}
          <div class="row"><span class="row-label">Lautstärke</span><input type="range" min="0.1" max="1" step="0.05" value="${st.volume}" data-set="volume" class="range"></div>
          <div class="row"><span class="row-label">Test</span><button class="ghost-btn" data-act="test-sound">${I.sound} Ton testen</button></div>
        </div>
@@ -558,7 +558,7 @@ function openSettings() {
            ? ''
            : `<div class="card tip"><b>Als App installieren</b><p>iPhone: Safari → Teilen → „Zum Home-Bildschirm“. Android: Menü → „App installieren“. Dann läuft der Timer im Vollbild und offline.</p></div>`
        }
-       <div class="card tip"><b>Tipp</b><p>Auf dem iPhone den Stumm-Schalter prüfen, falls kein Ton kommt. Bildschirm bleibt während der App automatisch an.</p></div>
+       <div class="card tip"><b>Tipp</b><p>Kein Ton auf dem iPhone? Lautstärke-Taste hoch drücken, während der Timer läuft. Der Bildschirm bleibt während der App automatisch an.</p></div>
        ${history.all().length ? `<button class="ghost-btn danger wide" data-act="hist-clear">${I.trash} Verlauf löschen</button>` : ''}
      </div>`,
     (sheet) => {
@@ -567,7 +567,7 @@ function openSettings() {
         if (!k) return;
         settings.set({ [k]: e.target.type === 'checkbox' ? e.target.checked : k === 'name' ? e.target.value.trim() : +e.target.value });
         if (k === 'keepAwake') e.target.checked ? keepAwake() : allowSleep();
-        if (k === 'soundWhenMuted') unlockAudio();
+        if (k === 'ignoreMute') unlockAudio();
       });
       sheet.addEventListener('input', (e) => {
         if (e.target.dataset.set === 'volume') settings.set({ volume: +e.target.value });
@@ -810,6 +810,10 @@ document.addEventListener('pointerdown', (e) => {
 function startRun(mode, cfg, title) {
   unlockAudio(); // inside the tap gesture
   keepAwake(); // a running workout always keeps the screen on
+  if (isIOS && settings.get().sound && !settings.get().ignoreMute && !settings.get().iosHintShown) {
+    settings.set({ iosHintShown: true });
+    setTimeout(() => toast('Ton folgt dem Stumm-Schalter – änderbar in den Einstellungen', 5000), 600);
+  }
   current = { mode, cfg: structuredClone(cfg), title };
   go('/run');
 }

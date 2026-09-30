@@ -6,10 +6,13 @@ let master = null;
 
 export function unlockAudio() {
   try {
-    // iOS 17+: 'ambient' mixes with music (Spotify keeps playing) but obeys the silent
-    // switch; 'playback' ignores the switch but interrupts other audio.
-    if (navigator.audioSession) navigator.audioSession.type = settings.get().soundWhenMuted ? 'playback' : 'ambient';
+    // iOS 17+: 'playback' plays through the ring/silent switch (volume buttons still apply);
+    // 'ambient' obeys the switch but mixes with music.
+    if (navigator.audioSession) navigator.audioSession.type = settings.get().ignoreMute ? 'playback' : 'ambient';
   } catch {}
+  // Older iOS: a playing <audio> element moves the page into the playback category,
+  // after which Web Audio ignores the silent switch too.
+  if (settings.get().ignoreMute && !navigator.audioSession) playSilentElement();
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
@@ -31,6 +34,46 @@ export function unlockAudio() {
     u.volume = 0;
     speechSynthesis.speak(u);
   }
+}
+
+let silentEl = null;
+function silentWav() {
+  // 0.5 s of 8 kHz mono silence
+  const n = 4000, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+  const w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+  w(36, 'data'); v.setUint32(40, n, true);
+  for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+function playSilentElement() {
+  try {
+    if (!silentEl) {
+      silentEl = document.createElement('audio');
+      silentEl.setAttribute('x-webkit-airplay', 'deny');
+      silentEl.preload = 'auto';
+      silentEl.loop = true;
+      silentEl.src = silentWav();
+    }
+    const p = silentEl.play();
+    if (p && p.catch) p.catch(() => {});
+  } catch {}
+}
+
+export const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+// iOS parks the AudioContext in 'suspended'/'interrupted' after calls, Siri, lock screen or
+// a second audio app. It may only be resumed inside a user gesture, so every tap tries.
+for (const ev of ['pointerdown', 'touchend', 'click']) {
+  document.addEventListener(
+    ev,
+    () => {
+      if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
+    },
+    { passive: true, capture: true },
+  );
 }
 
 document.addEventListener('visibilitychange', () => {
