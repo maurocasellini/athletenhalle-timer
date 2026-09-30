@@ -134,10 +134,6 @@ function renderHome() {
         <h1 class="display">${esc(greeting())}${name ? `,<br><em>${esc(name)}</em>` : '<em>.</em>'}</h1>
       </section>
 
-      <button class="ferdi-toggle ${settings.get().ferdi ? 'on' : ''}" data-act="ferdi" aria-pressed="${settings.get().ferdi}">
-        <span class="ferdi-text"><b>Ferdi Modus</b><small>${settings.get().ferdi ? 'AN · Extrem-Ansagen bei jedem Wechsel' : 'Extrem-Ansagen: los · weiter · Pause · fertig'}</small></span>
-        <span class="ferdi-switch"><i></i></span>
-      </button>
 
       ${
         last
@@ -195,6 +191,10 @@ function renderHome() {
       </section>`
           : ''
       }
+      <button class="ferdi-toggle ${settings.get().ferdi ? 'on' : ''}" data-act="ferdi" aria-pressed="${settings.get().ferdi}">
+        <span class="ferdi-text"><b>Ferdi Modus</b><small>Nur für Ferdi</small></span>
+        <span class="ferdi-switch"><i></i></span>
+      </button>
       <p class="wake-note" id="wake-note"></p>
     </main>`;
   bindWakeNote();
