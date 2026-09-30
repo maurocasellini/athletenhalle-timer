@@ -403,3 +403,15 @@ svg { display: block; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* interval list: Intervall → Pause, repeated */
+.iv-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.iv { overflow: hidden; }
+.iv-head { display: flex; align-items: center; gap: 10px; padding: 12px 8px 8px 14px; }
+.iv-color { width: 10px; height: 34px; border-radius: 5px; flex: none; }
+.iv-name { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--text); padding: 6px 0; font: italic 900 28px/1 var(--display); text-transform: uppercase; }
+.iv-name::placeholder { color: var(--text); opacity: 1; }
+.iv-name:focus::placeholder { color: #5a5a60; }
+.iv-name:focus { box-shadow: 0 2px 0 var(--accent); }
+.iv .row { border-top: 1px solid var(--line); min-height: 58px; }
+.iv-rest { background: #5b8fd90d; }

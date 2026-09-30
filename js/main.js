@@ -1,4 +1,4 @@
-import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary } from './modes.js';
+import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary, intervalName, intervalColor, normalizeIntervals } from './modes.js';
 import { Engine } from './engine.js';
 import { cue, speak, unlockAudio, isIOS } from './audio.js';
 import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
@@ -86,7 +86,7 @@ function route() {
     if (params.get('c')) {
       const data = decodeCfg(params.get('c'));
       if (data && typeof data === 'object') {
-        const cfg = { ...structuredClone(MODES[parts[1]].defaults), ...data };
+        const cfg = mergeCfg(parts[1], data);
         configs.set(parts[1], cfg);
         toast('Workout übernommen');
       }
@@ -230,9 +230,20 @@ function bindWakeNote() {
   });
 }
 
+// defaults + saved config; old interval configs (blocks) are converted instead of being
+// shadowed by the default interval list
+function mergeCfg(mode, cfg) {
+  const c = { ...structuredClone(MODES[mode].defaults), ...structuredClone(cfg || {}) };
+  if (mode === 'intervalle' && cfg && cfg.blocks && !cfg.intervals) {
+    delete c.intervals;
+    normalizeIntervals(c);
+  }
+  return c;
+}
+
 function safeSummary(mode, cfg) {
   try {
-    return summary(mode, { ...MODES[mode].defaults, ...cfg });
+    return summary(mode, mergeCfg(mode, cfg));
   } catch {
     return { total: 0 };
   }
@@ -248,6 +259,11 @@ function renderEditor(mode) {
   if (editMode !== mode || !editCfg) {
     editMode = mode;
     editCfg = configs.get(mode, def.defaults);
+    if (mode === 'intervalle' && editCfg.blocks) {
+      delete editCfg.intervals; // old block format wins over the merged-in defaults
+      normalizeIntervals(editCfg);
+      configs.set(mode, editCfg);
+    }
   }
   const sameMode = app.querySelector('.editor') && app.dataset.mode === mode;
   const scroll = sameMode ? window.scrollY : 0;
@@ -291,7 +307,7 @@ function summaryText(mode, cfg, sm) {
     case 'stoppuhr':
       return 'Zählt hoch · Rundenzeiten per Tipp';
     case 'intervalle':
-      return `${sm.segments} Abschnitte · ${(cfg.blocks || []).length} ${(cfg.blocks || []).length === 1 ? 'Block' : 'Blöcke'}`;
+      return `${(cfg.intervals || []).length} Intervalle × ${cfg.repeats || 1} ${cfg.repeats > 1 ? 'Runden' : 'Runde'}`;
     case 'countdown':
       return 'Zählt runter bis 0';
     case 'amrap':
@@ -341,59 +357,40 @@ function fieldRow(f, val) {
 }
 
 function intervalEditor(cfg) {
-  const blocks = cfg.blocks || [];
+  const ivs = cfg.intervals || [];
+  const timeStepper = (i, k, val, min) => `
+    <div class="stepper">
+      <button class="step" data-act="iv-dec" data-i="${i}" data-k="${k}" aria-label="weniger">${I.minus}</button>
+      <button class="val" data-act="iv-pick" data-i="${i}" data-k="${k}">${val === 0 && min === 0 ? '<span class="off">aus</span>' : fmtSec(val)}</button>
+      <button class="step" data-act="iv-inc" data-i="${i}" data-k="${k}" aria-label="mehr">${I.plus}</button>
+    </div>`;
   return `
     <div class="card group">
       ${fieldRow({ id: 'prep', type: 'time', label: 'Vorbereiten', min: 0 }, cfg.prep)}
     </div>
-    ${blocks
-      .map(
-        (b, bi) => `
-      <div class="card block" data-bi="${bi}">
-        <div class="block-head">
-          <input class="block-name" data-in="block-name" data-bi="${bi}" value="${esc(b.name)}" placeholder="Block ${bi + 1}" maxlength="40">
-          <div class="block-tools">
-            <button class="icon-btn subtle" data-act="block-up" data-bi="${bi}" aria-label="nach oben" ${bi === 0 ? 'disabled' : ''}>${I.up}</button>
-            <button class="icon-btn subtle" data-act="block-dup" data-bi="${bi}" aria-label="duplizieren">${I.copy}</button>
-            <button class="icon-btn subtle" data-act="block-del" data-bi="${bi}" aria-label="löschen">${I.trash}</button>
+    <div class="iv-list">
+      ${ivs
+        .map(
+          (iv, i) => `
+        <div class="card iv">
+          <div class="iv-head">
+            <button class="iv-color" data-act="iv-color" data-i="${i}" style="background:${intervalColor(iv, i)}" aria-label="Farbe wechseln"></button>
+            <input class="iv-name" data-in="iv-name" data-i="${i}" value="${esc(iv.name || '')}" placeholder="Intervall ${i + 1}" maxlength="40" enterkeyhint="done">
+            <div class="block-tools">
+              <button class="icon-btn subtle" data-act="iv-up" data-i="${i}" aria-label="nach oben" ${i === 0 ? 'disabled' : ''}>${I.up}</button>
+              <button class="icon-btn subtle" data-act="iv-dup" data-i="${i}" aria-label="duplizieren">${I.copy}</button>
+              <button class="icon-btn subtle" data-act="iv-del" data-i="${i}" aria-label="löschen" ${ivs.length < 2 ? 'disabled' : ''}>${I.trash}</button>
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <span class="row-label">Wiederholungen</span>
-          <div class="stepper">
-            <button class="step" data-act="rep-dec" data-bi="${bi}">${I.minus}</button>
-            <button class="val" data-act="rep-pick" data-bi="${bi}">${b.repeats}×</button>
-            <button class="step" data-act="rep-inc" data-bi="${bi}">${I.plus}</button>
-          </div>
-        </div>
-        <div class="steps">
-          ${b.steps
-            .map(
-              (s, si) => `
-            <div class="step-row">
-              <button class="color-dot" data-act="step-color" data-bi="${bi}" data-si="${si}" style="background:${s.color}" aria-label="Farbe"></button>
-              <div class="step-main">
-                <input class="step-name" data-in="step-name" data-bi="${bi}" data-si="${si}" value="${esc(s.name)}" placeholder="${s.kind === 'rest' ? 'Pause' : 'Übung'}" maxlength="40">
-                <button class="kind-pill ${s.kind}" data-act="step-kind" data-bi="${bi}" data-si="${si}">${s.kind === 'rest' ? 'Pause' : 'Arbeit'}</button>
-              </div>
-              <button class="val small" data-act="step-time" data-bi="${bi}" data-si="${si}">${fmtSec(s.dur)}</button>
-              <div class="step-tools">
-                <button class="icon-btn tiny" data-act="step-up" data-bi="${bi}" data-si="${si}" ${si === 0 ? 'disabled' : ''} aria-label="hoch">${I.up}</button>
-                <button class="icon-btn tiny" data-act="step-del" data-bi="${bi}" data-si="${si}" aria-label="löschen">${I.close}</button>
-              </div>
-            </div>`,
-            )
-            .join('')}
-        </div>
-        <div class="block-add">
-          <button class="ghost-btn" data-act="step-add" data-bi="${bi}" data-kind="work">${I.plus} Übung</button>
-          <button class="ghost-btn" data-act="step-add" data-bi="${bi}" data-kind="rest">${I.plus} Pause</button>
-        </div>
-      </div>`,
-      )
-      .join('')}
-    <button class="add-block" data-act="block-add">${I.plus} Block hinzufügen</button>
+          <div class="row"><span class="row-label"><span class="dot" style="background:${intervalColor(iv, i)}"></span>Dauer</span>${timeStepper(i, 'work', iv.work, 1)}</div>
+          <div class="row iv-rest"><span class="row-label"><span class="dot" style="background:${KIND.rest.color}"></span>Pause</span>${timeStepper(i, 'rest', iv.rest, 0)}</div>
+        </div>`,
+        )
+        .join('')}
+    </div>
+    <button class="add-block" data-act="iv-add">${I.plus} Intervall hinzufügen</button>
     <div class="card group">
+      ${fieldRow({ id: 'repeats', type: 'count', label: 'Wiederholungen', min: 1, max: 99 }, cfg.repeats)}
       ${fieldRow({ id: 'cool', type: 'time', label: 'Cool-down', min: 0 }, cfg.cool)}
     </div>`;
 }
@@ -406,7 +403,8 @@ function saveEdit() {
 function fieldDef(id) {
   const def = MODES[editMode];
   if (def.fields) return def.fields.find((f) => f.id === id);
-  return { id, type: 'time', min: 0 };
+  if (id === 'repeats') return { id, type: 'count', label: 'Wiederholungen', min: 1, max: 99 };
+  return { id, type: 'time', min: 0, label: id === 'prep' ? 'Vorbereiten' : 'Cool-down' };
 }
 
 function stepTime(v, dir) {
@@ -593,7 +591,7 @@ const actions = {
   'sheet-close': closeSheet,
   'quick-last': () => {
     const h = history.all().find((x) => x.cfg && MODES[x.mode]);
-    if (h) startRun(h.mode, { ...MODES[h.mode].defaults, ...h.cfg }, h.title);
+    if (h) startRun(h.mode, mergeCfg(h.mode, h.cfg), h.title);
   },
   'share-app': () => shareLink(location.origin + '/', 'Athletenhalle Gym Timer'),
   'test-sound': () => {
@@ -611,14 +609,14 @@ const actions = {
     const f = favorites.all().find((x) => x.id === el.dataset.id);
     if (!f) return;
     editMode = f.mode;
-    editCfg = { ...structuredClone(MODES[f.mode].defaults), ...structuredClone(f.cfg) };
+    editCfg = mergeCfg(f.mode, f.cfg);
     configs.set(f.mode, editCfg);
     go('/m/' + f.mode);
   },
   'fav-play': (el) => {
     const f = favorites.all().find((x) => x.id === el.dataset.id);
     if (!f) return;
-    startRun(f.mode, { ...MODES[f.mode].defaults, ...f.cfg }, f.name);
+    startRun(f.mode, mergeCfg(f.mode, f.cfg), f.name);
   },
   'fav-del': (el) => {
     const f = favorites.all().find((x) => x.id === el.dataset.id);
@@ -662,98 +660,54 @@ const actions = {
   start: () => startRun(editMode, editCfg, MODES[editMode].title),
 
   // interval builder
-  'rep-inc': (el) => {
-    const b = editCfg.blocks[+el.dataset.bi];
-    b.repeats = clamp(b.repeats + 1, 1, 99);
-    saveEdit();
-  },
-  'rep-dec': (el) => {
-    const b = editCfg.blocks[+el.dataset.bi];
-    b.repeats = clamp(b.repeats - 1, 1, 99);
-    saveEdit();
-  },
-  'rep-pick': (el) => {
-    const b = editCfg.blocks[+el.dataset.bi];
-    openCountPicker('Wiederholungen', b.repeats, 1, 99, (v) => {
-      b.repeats = v;
+  'iv-inc': (el) => changeInterval(el, +1),
+  'iv-dec': (el) => changeInterval(el, -1),
+  'iv-pick': (el) => {
+    const i = +el.dataset.i;
+    const k = el.dataset.k;
+    const iv = editCfg.intervals[i];
+    openTimePicker(k === 'rest' ? `Pause nach ${intervalName(iv, i)}` : intervalName(iv, i), iv[k], k === 'rest' ? 0 : 1, (v) => {
+      iv[k] = v;
       saveEdit();
     });
   },
-  'block-add': () => {
-    editCfg.blocks.push({
-      name: `Block ${editCfg.blocks.length + 1}`,
-      repeats: 1,
-      steps: [
-        { name: 'Übung', dur: 45, kind: 'work', color: STEP_COLORS[editCfg.blocks.length % STEP_COLORS.length] },
-        { name: 'Pause', dur: 15, kind: 'rest', color: KIND.rest.color },
-      ],
-    });
+  'iv-add': () => {
+    const last = editCfg.intervals[editCfg.intervals.length - 1];
+    editCfg.intervals.push({ name: '', work: last ? last.work : 40, rest: last ? last.rest : 20 });
     saveEdit();
   },
-  'block-del': (el) => {
-    const bi = +el.dataset.bi;
-    if (editCfg.blocks[bi].steps.length > 1 && !confirm('Block löschen?')) return;
-    editCfg.blocks.splice(bi, 1);
+  'iv-del': (el) => {
+    if (editCfg.intervals.length < 2) return;
+    editCfg.intervals.splice(+el.dataset.i, 1);
     saveEdit();
   },
-  'block-dup': (el) => {
-    const bi = +el.dataset.bi;
-    const copy = structuredClone(editCfg.blocks[bi]);
-    copy.name = copy.name + ' (Kopie)';
-    editCfg.blocks.splice(bi + 1, 0, copy);
+  'iv-dup': (el) => {
+    const i = +el.dataset.i;
+    editCfg.intervals.splice(i + 1, 0, structuredClone(editCfg.intervals[i]));
     saveEdit();
   },
-  'block-up': (el) => {
-    const bi = +el.dataset.bi;
-    if (bi < 1) return;
-    const [b] = editCfg.blocks.splice(bi, 1);
-    editCfg.blocks.splice(bi - 1, 0, b);
+  'iv-up': (el) => {
+    const i = +el.dataset.i;
+    if (i < 1) return;
+    const a = editCfg.intervals;
+    [a[i - 1], a[i]] = [a[i], a[i - 1]];
     saveEdit();
   },
-  'step-add': (el) => {
-    const b = editCfg.blocks[+el.dataset.bi];
-    const rest = el.dataset.kind === 'rest';
-    const workCount = b.steps.filter((s) => s.kind !== 'rest').length;
-    b.steps.push(
-      rest
-        ? { name: 'Pause', dur: 15, kind: 'rest', color: KIND.rest.color }
-        : { name: `Übung ${workCount + 1}`, dur: 40, kind: 'work', color: STEP_COLORS[workCount % STEP_COLORS.length] },
-    );
+  'iv-color': (el) => {
+    const i = +el.dataset.i;
+    const iv = editCfg.intervals[i];
+    const cur = STEP_COLORS.indexOf(intervalColor(iv, i));
+    iv.color = STEP_COLORS[(cur + 1) % STEP_COLORS.length];
     saveEdit();
-  },
-  'step-del': (el) => {
-    const b = editCfg.blocks[+el.dataset.bi];
-    b.steps.splice(+el.dataset.si, 1);
-    saveEdit();
-  },
-  'step-up': (el) => {
-    const b = editCfg.blocks[+el.dataset.bi];
-    const si = +el.dataset.si;
-    if (si < 1) return;
-    [b.steps[si - 1], b.steps[si]] = [b.steps[si], b.steps[si - 1]];
-    saveEdit();
-  },
-  'step-kind': (el) => {
-    const s = editCfg.blocks[+el.dataset.bi].steps[+el.dataset.si];
-    s.kind = s.kind === 'rest' ? 'work' : 'rest';
-    if (s.kind === 'rest' && s.color !== KIND.rest.color) s.color = KIND.rest.color;
-    else if (s.kind === 'work' && s.color === KIND.rest.color) s.color = KIND.work.color;
-    saveEdit();
-  },
-  'step-color': (el) => {
-    const s = editCfg.blocks[+el.dataset.bi].steps[+el.dataset.si];
-    const i = STEP_COLORS.indexOf(s.color);
-    s.color = STEP_COLORS[(i + 1) % STEP_COLORS.length];
-    saveEdit();
-  },
-  'step-time': (el) => {
-    const s = editCfg.blocks[+el.dataset.bi].steps[+el.dataset.si];
-    openTimePicker(s.name || 'Dauer', s.dur, 1, (v) => {
-      s.dur = v;
-      saveEdit();
-    });
   },
 };
+
+function changeInterval(el, dir) {
+  const iv = editCfg.intervals[+el.dataset.i];
+  const k = el.dataset.k;
+  iv[k] = clamp(stepTime(iv[k], dir), k === 'rest' ? 0 : 1, 99 * 60 + 59);
+  saveEdit();
+}
 
 function changeField(id, dir) {
   const f = fieldDef(id);
@@ -779,10 +733,11 @@ document.addEventListener('click', (e) => {
 document.addEventListener('input', (e) => {
   const k = e.target.dataset.in;
   if (!k || !editCfg) return;
-  const b = editCfg.blocks[+e.target.dataset.bi];
-  if (k === 'block-name') b.name = e.target.value;
-  if (k === 'step-name') b.steps[+e.target.dataset.si].name = e.target.value;
+  if (k === 'iv-name') editCfg.intervals[+e.target.dataset.i].name = e.target.value;
   configs.set(editMode, editCfg);
+  // live-update the summary line without re-rendering (keeps the keyboard open)
+  const sub = app.querySelector('.sum-sub');
+  if (sub) sub.textContent = summaryText(editMode, editCfg, summary(editMode, editCfg));
 });
 
 // hold +/- to repeat

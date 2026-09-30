@@ -74,18 +74,12 @@ export const MODES = {
     custom: true,
     defaults: {
       prep: 10,
+      repeats: 3,
       cool: 0,
-      blocks: [
-        {
-          name: 'Zirkel',
-          repeats: 3,
-          steps: [
-            { name: 'Squats', dur: 40, kind: 'work', color: '#EFD814' },
-            { name: 'Pause', dur: 20, kind: 'rest', color: '#5B8FD9' },
-            { name: 'Push-ups', dur: 40, kind: 'work', color: '#E8643A' },
-            { name: 'Pause', dur: 20, kind: 'rest', color: '#5B8FD9' },
-          ],
-        },
+      intervals: [
+        { name: '', work: 40, rest: 20 },
+        { name: '', work: 40, rest: 20 },
+        { name: '', work: 40, rest: 20 },
       ],
     },
   },
@@ -181,34 +175,43 @@ export function compile(mode, c) {
       out.finishButton = true;
       break;
     case 'intervalle': {
-      const blocks = (c.blocks || []).filter((b) => b.steps && b.steps.length);
-      blocks.forEach((b, bi) => {
-        for (let r = 1; r <= b.repeats; r++) {
-          b.steps.forEach((st, si) => {
-            const isLastStep = r === b.repeats && si === b.steps.length - 1 && bi === blocks.length - 1;
-            // skip a trailing rest at the very end of the workout
-            if (isLastStep && st.kind === 'rest' && segs.some((x) => x.kind === 'work')) return;
-            if (!(st.dur > 0)) return;
-            segs.push(
-              seg(st.kind === 'rest' ? 'rest' : 'work', st.dur, {
-                label: st.name || KIND[st.kind === 'rest' ? 'rest' : 'work'].label,
-                color: st.color || KIND[st.kind === 'rest' ? 'rest' : 'work'].color,
-                round: r,
-                rounds: b.repeats,
-                block: b.name,
-                blockIdx: bi + 1,
-                blocks: blocks.length,
-                speakName: true,
-              }),
-            );
-          });
-        }
-      });
+      const ivs = normalizeIntervals(c).intervals.filter((iv) => iv.work > 0);
+      const reps = Math.max(1, c.repeats || 1);
+      for (let r = 1; r <= reps; r++) {
+        ivs.forEach((iv, i) => {
+          const name = intervalName(iv, i);
+          const color = intervalColor(iv, i);
+          segs.push(seg('work', iv.work, { label: name, color, round: r, rounds: reps, speakName: true }));
+          const last = r === reps && i === ivs.length - 1;
+          // no pause after the very last interval of the workout
+          if (iv.rest > 0 && !last) segs.push(seg('rest', iv.rest, { round: r, rounds: reps }));
+        });
+      }
       break;
     }
   }
   if (c.cool > 0) segs.push(seg('cool', c.cool));
   return out;
+}
+
+export const intervalName = (iv, i) => (iv.name || '').trim() || `Intervall ${i + 1}`;
+export const intervalColor = (iv, i) => iv.color || STEP_COLORS[i % (STEP_COLORS.length - 1)];
+
+// Configs saved before the interval redesign used blocks of work/rest steps: fold them into
+// the flat "interval + pause" list so old favourites keep working.
+export function normalizeIntervals(c) {
+  if (Array.isArray(c.intervals)) return c;
+  const b = (c.blocks || [])[0];
+  const intervals = [];
+  for (const st of (b && b.steps) || []) {
+    if (st.kind === 'rest') {
+      if (intervals.length) intervals[intervals.length - 1].rest += st.dur;
+    } else intervals.push({ name: st.name || '', work: st.dur, rest: 0, color: st.color });
+  }
+  c.intervals = intervals.length ? intervals : [{ name: '', work: 40, rest: 20 }];
+  c.repeats = (b && b.repeats) || c.repeats || 1;
+  delete c.blocks;
+  return c;
 }
 
 export function totalMs(program) {
