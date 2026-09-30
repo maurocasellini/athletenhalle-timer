@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS = {
   vibrate: true,
   volume: 0.9,
   keepAwake: true,
-  ignoreMute: true,
+  mixMusic: true, // Web can't do both: mix with Spotify AND ignore the silent switch
   ferdi: false,
   halfway: true,
   bigDigits: true,

@@ -7,13 +7,14 @@ let master = null;
 
 export function unlockAudio() {
   try {
-    // iOS 17+: 'playback' plays through the ring/silent switch (volume buttons still apply);
-    // 'ambient' obeys the switch but mixes with music.
-    if (navigator.audioSession) navigator.audioSession.type = settings.get().ignoreMute ? 'playback' : 'ambient';
+    // iOS 17+: 'ambient' mixes with Spotify & co. (needs the silent switch off);
+    // 'playback' plays through the silent switch but stops other music.
+    if (navigator.audioSession) navigator.audioSession.type = settings.get().mixMusic ? 'ambient' : 'playback';
   } catch {}
   // Older iOS: a playing <audio> element moves the page into the playback category,
   // after which Web Audio ignores the silent switch too.
-  if (settings.get().ignoreMute && !navigator.audioSession) playSilentElement();
+  if (!settings.get().mixMusic && !navigator.audioSession) playSilentElement();
+  else if (silentEl && !silentEl.paused) silentEl.pause();
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;

@@ -541,7 +541,7 @@ function openSettings() {
          ${tg('voice', t('set.voice'), t('set.voiceSub'))}
          ${tg('vibrate', t('set.vibrate'), t('set.vibrateSub'))}
          ${tg('keepAwake', t('set.keepAwake'), t('set.keepAwakeSub'))}
-         ${tg('ignoreMute', t('set.ignoreMute'), t('set.ignoreMuteSub'))}
+         ${tg('mixMusic', t('set.mixMusic'), t('set.mixMusicSub'))}
          <div class="row"><span class="row-label">${t('set.volume')}</span><input type="range" min="0.1" max="1" step="0.05" value="${st.volume}" data-set="volume" class="range"></div>
          <div class="row"><span class="row-label">${t('set.test')}</span><button class="ghost-btn" data-act="test-sound">${I.sound} ${t('set.testBtn')}</button></div>
        </div>
@@ -561,7 +561,7 @@ function openSettings() {
         }
         settings.set({ [k]: e.target.type === 'checkbox' ? e.target.checked : k === 'name' ? e.target.value.trim() : +e.target.value });
         if (k === 'keepAwake') e.target.checked ? keepAwake() : allowSleep();
-        if (k === 'ignoreMute') unlockAudio();
+        if (k === 'mixMusic') unlockAudio();
       });
       sheet.addEventListener('input', (e) => {
         if (e.target.dataset.set === 'volume') settings.set({ volume: +e.target.value });
@@ -769,9 +769,9 @@ document.addEventListener('pointerdown', (e) => {
 function startRun(mode, cfg, title) {
   unlockAudio(); // inside the tap gesture
   keepAwake(); // a running workout always keeps the screen on
-  if (isIOS && settings.get().sound && !settings.get().ignoreMute && !settings.get().iosHintShown) {
-    settings.set({ iosHintShown: true });
-    setTimeout(() => toast(t('t.iosHint'), 5000), 600);
+  if (isIOS && settings.get().sound && settings.get().mixMusic && !settings.get().musicHintShown) {
+    settings.set({ musicHintShown: true });
+    setTimeout(() => toast(t('t.iosHint'), 6000), 600);
   }
   current = { mode, cfg: structuredClone(cfg), title };
   go('/run');
