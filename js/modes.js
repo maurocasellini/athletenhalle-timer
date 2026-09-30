@@ -1,55 +1,65 @@
+import { t as tr } from './i18n.js';
+
 // Mode definitions + compiler: every mode turns its config into a flat list of segments.
 // A segment: { kind, label, dur (ms, Infinity = open), up (display counts up), round, rounds, set, sets, color }
 
 export const KIND = {
-  prep: { label: 'Bereit', color: '#E8893A', speak: 'Bereit machen' },
-  work: { label: 'Arbeit', color: '#EFD814', speak: 'Los' },
-  rest: { label: 'Pause', color: '#5B8FD9', speak: 'Pause' },
-  setrest: { label: 'Satzpause', color: '#9A86E0', speak: 'Satzpause' },
-  cool: { label: 'Cool-down', color: '#5FB8A6', speak: 'Cool down' },
-  up: { label: 'Go', color: '#EFD814', speak: 'Los' },
+  prep: { get label() { return tr('k.prep'); }, color: '#E8893A', get speak() { return tr('v.prep'); } },
+  work: { get label() { return tr('k.work'); }, color: '#EFD814', get speak() { return tr('v.work'); } },
+  rest: { get label() { return tr('k.rest'); }, color: '#5B8FD9', get speak() { return tr('v.rest'); } },
+  setrest: { get label() { return tr('k.setrest'); }, color: '#9A86E0', get speak() { return tr('v.setrest'); } },
+  cool: { get label() { return tr('k.cool'); }, color: '#5FB8A6', get speak() { return tr('v.cool'); } },
+  up: { get label() { return tr('k.up'); }, color: '#EFD814', get speak() { return tr('v.up'); } },
 };
 
 export const STEP_COLORS = ['#EFD814', '#E8643A', '#E0578A', '#E8893A', '#9A86E0', '#5FB8A6', '#5B8FD9', '#EDEDED'];
 
-const t = (id, label, extra = {}) => ({ id, type: 'time', label, ...extra });
-const n = (id, label, extra = {}) => ({ id, type: 'count', label, min: 1, max: 99, ...extra });
+const t = (id, key, extra = {}) => ({ id, type: 'time', get label() { return tr(key); }, ...extra });
+const n = (id, key, extra = {}) => ({ id, type: 'count', get label() { return tr(key); }, min: 1, max: 99, ...extra });
 
 export const MODES = {
   tabata: {
     tag: '20/10',
-    title: 'Tabata',
-    sub: 'Arbeit / Pause im Wechsel',
+    get title() {
+      return tr('m.tabata');
+    },
+    get sub() {
+      return tr('m.tabata.sub');
+    },
     icon: 'tabata',
     defaults: { prep: 10, work: 20, rest: 10, rounds: 8, sets: 1, setRest: 60, cool: 0 },
     fields: [
-      t('prep', 'Vorbereiten', { min: 0 }),
-      t('work', 'Arbeit', { min: 1, accent: 'work' }),
-      t('rest', 'Pause', { min: 0, accent: 'rest' }),
-      n('rounds', 'Runden'),
-      n('sets', 'Sätze'),
-      t('setRest', 'Pause zwischen Sätzen', { min: 0, showIf: (c) => c.sets > 1, accent: 'setrest' }),
-      t('cool', 'Cool-down', { min: 0 }),
+      t('prep', 'f.prep', { min: 0 }),
+      t('work', 'f.work', { min: 1, accent: 'work' }),
+      t('rest', 'f.rest', { min: 0, accent: 'rest' }),
+      n('rounds', 'f.rounds'),
+      n('sets', 'f.sets'),
+      t('setRest', 'f.setRest', { min: 0, showIf: (c) => c.sets > 1, accent: 'setrest' }),
+      t('cool', 'f.cool', { min: 0 }),
     ],
     presets: [
-      { name: 'Klassisch 20/10 × 8', cfg: { work: 20, rest: 10, rounds: 8, sets: 1 } },
+      { get name() { return tr('p.classic'); }, cfg: { work: 20, rest: 10, rounds: 8, sets: 1 } },
       { name: '40/20 × 10', cfg: { work: 40, rest: 20, rounds: 10, sets: 1 } },
       { name: '30/30 × 12', cfg: { work: 30, rest: 30, rounds: 12, sets: 1 } },
-      { name: '4 Sätze Tabata', cfg: { work: 20, rest: 10, rounds: 8, sets: 4, setRest: 60 } },
+      { get name() { return tr('p.4sets'); }, cfg: { work: 20, rest: 10, rounds: 8, sets: 4, setRest: 60 } },
     ],
   },
   runden: {
     tag: 'EMOM',
-    title: 'Runden',
-    sub: 'EMOM · E2MOM · Runden',
+    get title() {
+      return tr('m.runden');
+    },
+    get sub() {
+      return tr('m.runden.sub');
+    },
     icon: 'runden',
     defaults: { prep: 10, round: 60, rounds: 10, rest: 0, cool: 0 },
     fields: [
-      t('prep', 'Vorbereiten', { min: 0 }),
-      t('round', 'Rundendauer', { min: 1, accent: 'work' }),
-      n('rounds', 'Runden'),
-      t('rest', 'Pause zwischen Runden', { min: 0, accent: 'rest' }),
-      t('cool', 'Cool-down', { min: 0 }),
+      t('prep', 'f.prep', { min: 0 }),
+      t('round', 'f.round', { min: 1, accent: 'work' }),
+      n('rounds', 'f.rounds'),
+      t('rest', 'f.restRounds', { min: 0, accent: 'rest' }),
+      t('cool', 'f.cool', { min: 0 }),
     ],
     presets: [
       { name: 'EMOM 10', cfg: { round: 60, rounds: 10, rest: 0 } },
@@ -60,16 +70,24 @@ export const MODES = {
   },
   stoppuhr: {
     tag: '0:00',
-    title: 'Stoppuhr',
-    sub: 'Zeit messen mit Runden',
+    get title() {
+      return tr('m.stoppuhr');
+    },
+    get sub() {
+      return tr('m.stoppuhr.sub');
+    },
     icon: 'stoppuhr',
     defaults: { prep: 0 },
-    fields: [t('prep', 'Vorbereiten', { min: 0 })],
+    fields: [t('prep', 'f.prep', { min: 0 })],
   },
   intervalle: {
     tag: 'MIX',
-    title: 'Intervalle',
-    sub: 'Eigene Abläufe bauen',
+    get title() {
+      return tr('m.intervalle');
+    },
+    get sub() {
+      return tr('m.intervalle.sub');
+    },
     icon: 'intervalle',
     custom: true,
     defaults: {
@@ -85,11 +103,15 @@ export const MODES = {
   },
   countdown: {
     tag: '5:00',
-    title: 'Countdown',
-    sub: 'Einfacher Timer',
+    get title() {
+      return tr('m.countdown');
+    },
+    get sub() {
+      return tr('m.countdown.sub');
+    },
     icon: 'countdown',
     defaults: { prep: 0, dur: 300 },
-    fields: [t('prep', 'Vorbereiten', { min: 0 }), t('dur', 'Dauer', { min: 1, accent: 'work' })],
+    fields: [t('prep', 'f.prep', { min: 0 }), t('dur', 'f.dur', { min: 1, accent: 'work' })],
     presets: [
       { name: '1 Min', cfg: { dur: 60 } },
       { name: '3 Min', cfg: { dur: 180 } },
@@ -99,11 +121,15 @@ export const MODES = {
   },
   amrap: {
     tag: 'AMRAP',
-    title: 'AMRAP',
-    sub: 'So viele Runden wie möglich',
+    get title() {
+      return tr('m.amrap');
+    },
+    get sub() {
+      return tr('m.amrap.sub');
+    },
     icon: 'amrap',
     defaults: { prep: 10, dur: 600 },
-    fields: [t('prep', 'Vorbereiten', { min: 0 }), t('dur', 'Zeitlimit', { min: 1, accent: 'work' })],
+    fields: [t('prep', 'f.prep', { min: 0 }), t('dur', 'f.limit', { min: 1, accent: 'work' })],
     presets: [
       { name: '8 Min', cfg: { dur: 480 } },
       { name: '12 Min', cfg: { dur: 720 } },
@@ -112,11 +138,15 @@ export const MODES = {
   },
   fortime: {
     tag: 'FT',
-    title: 'For Time',
-    sub: 'So schnell wie möglich',
+    get title() {
+      return tr('m.fortime');
+    },
+    get sub() {
+      return tr('m.fortime.sub');
+    },
     icon: 'fortime',
     defaults: { prep: 10, cap: 900 },
-    fields: [t('prep', 'Vorbereiten', { min: 0 }), t('cap', 'Time Cap (0 = keins)', { min: 0, accent: 'work' })],
+    fields: [t('prep', 'f.prep', { min: 0 }), t('cap', 'f.cap', { min: 0, accent: 'work' })],
   },
 };
 
@@ -153,24 +183,24 @@ export function compile(mode, c) {
     }
     case 'runden': {
       for (let r = 1; r <= c.rounds; r++) {
-        segs.push(seg('work', c.round, { label: `Runde ${r}`, round: r, rounds: c.rounds }));
+        segs.push(seg('work', c.round, { label: tr('r.roundLabel', { n: r }), round: r, rounds: c.rounds }));
         if (c.rest > 0 && r < c.rounds) segs.push(seg('rest', c.rest, { round: r, rounds: c.rounds }));
       }
       break;
     }
     case 'stoppuhr':
-      segs.push(seg('up', Infinity, { up: true, label: 'Stoppuhr' }));
+      segs.push(seg('up', Infinity, { up: true, label: tr('m.stoppuhr') }));
       out.laps = true;
       break;
     case 'countdown':
-      segs.push(seg('work', c.dur, { label: 'Countdown' }));
+      segs.push(seg('work', c.dur, { label: tr('m.countdown') }));
       break;
     case 'amrap':
-      segs.push(seg('work', c.dur, { label: 'AMRAP' }));
+      segs.push(seg('work', c.dur, { label: tr('m.amrap') }));
       out.counter = true;
       break;
     case 'fortime':
-      segs.push(seg('up', c.cap > 0 ? c.cap : Infinity, { up: true, label: 'For Time' }));
+      segs.push(seg('up', c.cap > 0 ? c.cap : Infinity, { up: true, label: tr('m.fortime') }));
       out.counter = true;
       out.finishButton = true;
       break;
@@ -194,7 +224,7 @@ export function compile(mode, c) {
   return out;
 }
 
-export const intervalName = (iv, i) => (iv.name || '').trim() || `Intervall ${i + 1}`;
+export const intervalName = (iv, i) => (iv.name || '').trim() || tr('iv.n', { n: i + 1 });
 export const intervalColor = (iv, i) => iv.color || STEP_COLORS[i % (STEP_COLORS.length - 1)];
 
 // Configs saved before the interval redesign used blocks of work/rest steps: fold them into

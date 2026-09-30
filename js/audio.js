@@ -1,5 +1,6 @@
 // Web Audio beeps + German voice cues + vibration.
 import { settings } from './store.js';
+import { voiceLang } from './i18n.js';
 
 let ctx = null;
 let master = null;
@@ -104,10 +105,20 @@ function vibrate(p) {
 }
 
 let voice = null;
+let voiceFor = null;
 function pickVoice() {
   if (!('speechSynthesis' in window)) return null;
+  const want = voiceLang();
+  const pre = want.slice(0, 2);
   const vs = speechSynthesis.getVoices();
-  voice = vs.find((v) => v.lang === 'de-DE' && /premium|enhanced|anna|petra|markus/i.test(v.name)) || vs.find((v) => v.lang?.startsWith('de')) || null;
+  const good = /premium|enhanced|erweitert|neural|natural/i;
+  voice =
+    vs.find((v) => v.lang === want && good.test(v.name)) ||
+    vs.find((v) => v.lang === want) ||
+    vs.find((v) => v.lang?.startsWith(pre) && good.test(v.name)) ||
+    vs.find((v) => v.lang?.startsWith(pre)) ||
+    null;
+  voiceFor = want;
   return voice;
 }
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = pickVoice;
@@ -118,7 +129,8 @@ export function speak(text, opts = {}) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'de-DE';
+    u.lang = voiceLang();
+    if (voiceFor !== u.lang) pickVoice();
     if (voice || pickVoice()) u.voice = voice;
     u.rate = opts.hype ? 1.2 : 1.05;
     u.pitch = opts.hype ? 1.25 : 1;

@@ -423,3 +423,7 @@ svg { display: block; }
 .ferdi-toggle.on .ferdi-switch { background: #ff3d6e; }
 .ferdi-toggle.on .ferdi-switch i { transform: translateX(18px); background: #fff; }
 .ferdi-badge { font: italic 900 13px/1 var(--display); text-transform: uppercase; letter-spacing: .1em; background: #ff3d6e; color: #0a0a0a; padding: 4px 8px; border-radius: 6px; }
+
+/* language picker */
+.select { appearance: none; -webkit-appearance: none; max-width: 60%; background: var(--card-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238a8a93' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; color: var(--text); border: 0; border-radius: 12px; padding: 10px 34px 10px 14px; font: 600 15px var(--ui); cursor: pointer; }
+.select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }

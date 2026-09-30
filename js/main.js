@@ -4,6 +4,7 @@ import { cue, speak, unlockAudio, isIOS } from './audio.js';
 import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
 import { settings, configs, favorites, history } from './store.js';
 import { I } from './icons.js';
+import { t, tw, LANGS, lang, locale, deviceLang } from './i18n.js';
 
 const app = document.getElementById('app');
 const sheetRoot = document.getElementById('sheet-root');
@@ -61,9 +62,9 @@ async function shareLink(url, title) {
   }
   try {
     await navigator.clipboard.writeText(url);
-    toast('Link kopiert');
+    toast(t('t.copied'));
   } catch {
-    prompt('Link kopieren:', url);
+    prompt(t('t.copy'), url);
   }
 }
 
@@ -76,6 +77,7 @@ let engine = null;
 let runView = null;
 
 function route() {
+  document.documentElement.lang = lang();
   const hash = location.hash.replace(/^#/, '') || '/';
   const [path, query] = hash.split('?');
   const parts = path.split('/').filter(Boolean);
@@ -88,7 +90,7 @@ function route() {
       if (data && typeof data === 'object') {
         const cfg = mergeCfg(parts[1], data);
         configs.set(parts[1], cfg);
-        toast('Workout übernommen');
+        toast(t('t.imported'));
       }
       window.history.replaceState(null, '', `#/m/${parts[1]}`);
     }
@@ -107,11 +109,11 @@ window.addEventListener('hashchange', route);
 // ---------- home ----------
 function greeting() {
   const h = new Date().getHours();
-  if (h < 5) return 'Nachtschicht';
-  if (h < 11) return 'Guten Morgen';
-  if (h < 17) return 'Let’s go';
-  if (h < 22) return 'Guten Abend';
-  return 'Spät dran';
+  if (h < 5) return t('greet.night');
+  if (h < 11) return t('greet.morning');
+  if (h < 17) return t('greet.day');
+  if (h < 22) return t('greet.evening');
+  return t('greet.late');
 }
 
 function renderHome() {
@@ -121,12 +123,12 @@ function renderHome() {
   const hist = allHist.slice(0, 5);
   const name = (settings.get().name || '').trim();
   const last = allHist.find((h) => h.cfg && MODES[h.mode]);
-  const date = new Date().toLocaleDateString('de-CH', { weekday: 'long', day: 'numeric', month: 'long' });
+  const date = new Date().toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' });
   app.innerHTML = `
     <header class="topbar">
-      <button class="round-btn" data-act="settings" aria-label="Einstellungen">${I.user}</button>
+      <button class="round-btn" data-act="settings" aria-label="${t('a.settings')}">${I.user}</button>
       <span class="wordmark"><img class="brand-logo" src="/brand/logo.png" alt="Athletenhalle" onerror="this.remove()"><span>ATHLETENHALLE</span></span>
-      <button class="round-btn" data-act="share-app" aria-label="Teilen">${I.share}</button>
+      <button class="round-btn" data-act="share-app" aria-label="${t('a.share')}">${I.share}</button>
     </header>
     <main class="home">
       <section class="hero">
@@ -138,7 +140,7 @@ function renderHome() {
       ${
         last
           ? `<button class="quick" data-act="quick-last">
-          <span class="quick-text"><small>Nochmal</small><b>${esc(last.title)}</b><span>${fmtTotal(safeSummary(last.mode, last.cfg).total)} · ${esc(MODES[last.mode].title)}</span></span>
+          <span class="quick-text"><small>${t('home.again')}</small><b>${esc(last.title)}</b><span>${fmtTotal(safeSummary(last.mode, last.cfg).total)} · ${esc(MODES[last.mode].title)}</span></span>
           <span class="quick-play">${I.play}</span>
         </button>`
           : ''
@@ -157,7 +159,7 @@ function renderHome() {
       </div>
 
       <section class="section">
-        <div class="section-head"><h2>Favoriten</h2></div>
+        <div class="section-head"><h2>${t('home.favorites')}</h2></div>
         ${
           favs.length
             ? `<div class="list">${favs
@@ -168,23 +170,23 @@ function renderHome() {
                       <span class="fav-icon">${I[MODES[f.mode]?.icon || 'runden']}</span>
                       <span class="fav-text"><b>${esc(f.name)}</b><small>${esc(MODES[f.mode]?.title || '')} · ${fmtTotal(sm.total)}</small></span>
                     </button>
-                    <button class="icon-btn subtle" data-act="fav-del" data-id="${f.id}" aria-label="Löschen">${I.trash}</button>
-                    <button class="play-mini" data-act="fav-play" data-id="${f.id}" aria-label="Starten">${I.play}</button>
+                    <button class="icon-btn subtle" data-act="fav-del" data-id="${f.id}" aria-label="${t('a.delete')}">${I.trash}</button>
+                    <button class="play-mini" data-act="fav-play" data-id="${f.id}" aria-label="${t('a.start')}">${I.play}</button>
                   </div>`;
                 })
                 .join('')}</div>`
-            : `<p class="empty">Workout im Editor bauen, ${I.star} tippen – liegt dann hier für den Schnellstart.</p>`
+            : `<p class="empty">${t('home.favEmpty', { star: I.star })}</p>`
         }
       </section>
 
       ${
         hist.length
           ? `<section class="section">
-        <div class="section-head"><h2>Zuletzt</h2></div>
+        <div class="section-head"><h2>${t('home.recent')}</h2></div>
         <div class="list">${hist
           .map(
             (h) => `<div class="list-row hist"><span class="fav-icon">${I[MODES[h.mode]?.icon || 'runden']}</span>
-            <span class="fav-text"><b>${esc(h.title)}</b><small>${new Date(h.at).toLocaleDateString('de-CH', { weekday: 'short', day: 'numeric', month: 'short' })} · ${new Date(h.at).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' })}${h.rounds ? ` · ${h.rounds} Runden` : ''}</small></span>
+            <span class="fav-text"><b>${esc(h.title)}</b><small>${new Date(h.at).toLocaleDateString(locale(), { weekday: 'short', day: 'numeric', month: 'short' })} · ${new Date(h.at).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })}${h.rounds ? ` · ${t('home.roundsN', { n: h.rounds })}` : ''}</small></span>
             <span class="hist-time">${fmtUp(h.dur)}</span></div>`,
           )
           .join('')}</div>
@@ -192,7 +194,7 @@ function renderHome() {
           : ''
       }
       <button class="ferdi-toggle ${settings.get().ferdi ? 'on' : ''}" data-act="ferdi" aria-pressed="${settings.get().ferdi}">
-        <span class="ferdi-text"><b>Ferdi Modus</b><small>Nur für Ferdi</small></span>
+        <span class="ferdi-text"><b>${t('ferdi.title')}</b><small>${t('ferdi.sub')}</small></span>
         <span class="ferdi-switch"><i></i></span>
       </button>
       <p class="wake-note" id="wake-note"></p>
@@ -208,9 +210,9 @@ function bindWakeNote() {
     el.innerHTML =
       m === 'off'
         ? settings.get().keepAwake
-          ? '<span class="dot"></span> Einmal tippen – dann bleibt der Bildschirm an'
-          : 'Bildschirm darf sich ausschalten'
-        : `<span class="dot on"></span> Bildschirm bleibt immer an`;
+          ? `<span class="dot"></span> ${t('wake.tap')}`
+          : t('wake.off')
+        : `<span class="dot on"></span> ${t('wake.on')}`;
   });
 }
 
@@ -255,16 +257,16 @@ function renderEditor(mode) {
   const sm = summary(mode, editCfg);
   app.innerHTML = `
     <header class="topbar">
-      <button class="round-btn" data-act="home" aria-label="Zurück">${I.back}</button>
+      <button class="round-btn" data-act="home" aria-label="${t('a.back')}">${I.back}</button>
       <h1>${def.title}</h1>
       <div class="topbar-right">
-        <button class="round-btn" data-act="save-fav" aria-label="Als Favorit speichern">${I.star}</button>
-        <button class="round-btn" data-act="share-cfg" aria-label="Teilen">${I.share}</button>
+        <button class="round-btn" data-act="save-fav" aria-label="${t('a.saveFav')}">${I.star}</button>
+        <button class="round-btn" data-act="share-cfg" aria-label="${t('a.share')}">${I.share}</button>
       </div>
     </header>
     <main class="editor">
       <div class="summary card">
-        <div class="sum-total">${sm.total === Infinity ? (mode === 'stoppuhr' ? '0:00' : 'offen') : fmtTotal(sm.total)}</div>
+        <div class="sum-total">${sm.total === Infinity ? (mode === 'stoppuhr' ? '0:00' : t('e.open')) : fmtTotal(sm.total)}</div>
         <div class="sum-sub">${summaryText(mode, editCfg, sm)}</div>
         ${timeline(mode, editCfg)}
       </div>
@@ -277,7 +279,7 @@ function renderEditor(mode) {
       <div class="spacer"></div>
     </main>
     <div class="start-bar">
-      <button class="start-btn" data-act="start">${I.play}<span>Start</span></button>
+      <button class="start-btn" data-act="start">${I.play}<span>${t('e.start')}</span></button>
     </div>`;
   window.scrollTo(0, scroll);
 }
@@ -285,19 +287,19 @@ function renderEditor(mode) {
 function summaryText(mode, cfg, sm) {
   switch (mode) {
     case 'tabata':
-      return `${cfg.rounds} Runden × ${cfg.sets} ${cfg.sets > 1 ? 'Sätze' : 'Satz'} · ${fmtSec(cfg.work)} / ${fmtSec(cfg.rest)}`;
+      return `${cfg.rounds} ${tw('round', cfg.rounds)} × ${cfg.sets} ${tw('set', cfg.sets)} · ${fmtSec(cfg.work)} / ${fmtSec(cfg.rest)}`;
     case 'runden':
-      return `${cfg.rounds} × ${fmtSec(cfg.round)}${cfg.rest ? ` · ${fmtSec(cfg.rest)} Pause` : ''}`;
+      return `${cfg.rounds} × ${fmtSec(cfg.round)}${cfg.rest ? ` · ${fmtSec(cfg.rest)} ${t('w.pause')}` : ''}`;
     case 'stoppuhr':
-      return 'Zählt hoch · Rundenzeiten per Tipp';
+      return t('sum.stoppuhr');
     case 'intervalle':
-      return `${(cfg.intervals || []).length} Intervalle × ${cfg.repeats || 1} ${cfg.repeats > 1 ? 'Runden' : 'Runde'}`;
+      return `${(cfg.intervals || []).length} ${tw('interval', (cfg.intervals || []).length)} × ${cfg.repeats || 1} ${tw('round', cfg.repeats || 1)}`;
     case 'countdown':
-      return 'Zählt runter bis 0';
+      return t('sum.countdown');
     case 'amrap':
-      return 'Runden zählen per Tipp auf den Zähler';
+      return t('sum.amrap');
     case 'fortime':
-      return cfg.cap ? `Time Cap ${fmtSec(cfg.cap)} · Runden zählen` : 'Ohne Time Cap · Runden zählen';
+      return cfg.cap ? t('sum.ftCap', { cap: fmtSec(cfg.cap) }) : t('sum.ftNo');
   }
   return '';
 }
@@ -324,18 +326,18 @@ function fieldRow(f, val) {
     return `<div class="row">
       <span class="row-label">${dot}${esc(f.label)}</span>
       <div class="stepper">
-        <button class="step" data-act="dec" data-f="${f.id}" aria-label="weniger">${I.minus}</button>
-        <button class="val" data-act="pick-time" data-f="${f.id}">${val === 0 && f.min === 0 ? '<span class="off">aus</span>' : fmtSec(val)}</button>
-        <button class="step" data-act="inc" data-f="${f.id}" aria-label="mehr">${I.plus}</button>
+        <button class="step" data-act="dec" data-f="${f.id}" aria-label="${t('a.less')}">${I.minus}</button>
+        <button class="val" data-act="pick-time" data-f="${f.id}">${val === 0 && f.min === 0 ? `<span class="off">${t('e.off')}</span>` : fmtSec(val)}</button>
+        <button class="step" data-act="inc" data-f="${f.id}" aria-label="${t('a.more')}">${I.plus}</button>
       </div>
     </div>`;
   }
   return `<div class="row">
     <span class="row-label">${dot}${esc(f.label)}</span>
     <div class="stepper">
-      <button class="step" data-act="dec" data-f="${f.id}" aria-label="weniger">${I.minus}</button>
+      <button class="step" data-act="dec" data-f="${f.id}" aria-label="${t('a.less')}">${I.minus}</button>
       <button class="val" data-act="pick-count" data-f="${f.id}">${val}</button>
-      <button class="step" data-act="inc" data-f="${f.id}" aria-label="mehr">${I.plus}</button>
+      <button class="step" data-act="inc" data-f="${f.id}" aria-label="${t('a.more')}">${I.plus}</button>
     </div>
   </div>`;
 }
@@ -344,13 +346,13 @@ function intervalEditor(cfg) {
   const ivs = cfg.intervals || [];
   const timeStepper = (i, k, val, min) => `
     <div class="stepper">
-      <button class="step" data-act="iv-dec" data-i="${i}" data-k="${k}" aria-label="weniger">${I.minus}</button>
-      <button class="val" data-act="iv-pick" data-i="${i}" data-k="${k}">${val === 0 && min === 0 ? '<span class="off">aus</span>' : fmtSec(val)}</button>
-      <button class="step" data-act="iv-inc" data-i="${i}" data-k="${k}" aria-label="mehr">${I.plus}</button>
+      <button class="step" data-act="iv-dec" data-i="${i}" data-k="${k}" aria-label="${t('a.less')}">${I.minus}</button>
+      <button class="val" data-act="iv-pick" data-i="${i}" data-k="${k}">${val === 0 && min === 0 ? `<span class="off">${t('e.off')}</span>` : fmtSec(val)}</button>
+      <button class="step" data-act="iv-inc" data-i="${i}" data-k="${k}" aria-label="${t('a.more')}">${I.plus}</button>
     </div>`;
   return `
     <div class="card group">
-      ${fieldRow({ id: 'prep', type: 'time', label: 'Vorbereiten', min: 0 }, cfg.prep)}
+      ${fieldRow({ id: 'prep', type: 'time', label: t('f.prep'), min: 0 }, cfg.prep)}
     </div>
     <div class="iv-list">
       ${ivs
@@ -358,24 +360,24 @@ function intervalEditor(cfg) {
           (iv, i) => `
         <div class="card iv">
           <div class="iv-head">
-            <button class="iv-color" data-act="iv-color" data-i="${i}" style="background:${intervalColor(iv, i)}" aria-label="Farbe wechseln"></button>
-            <input class="iv-name" data-in="iv-name" data-i="${i}" value="${esc(iv.name || '')}" placeholder="Intervall ${i + 1}" maxlength="40" enterkeyhint="done">
+            <button class="iv-color" data-act="iv-color" data-i="${i}" style="background:${intervalColor(iv, i)}" aria-label="${t('a.color')}"></button>
+            <input class="iv-name" data-in="iv-name" data-i="${i}" value="${esc(iv.name || '')}" placeholder="${esc(t('iv.n', { n: i + 1 }))}" maxlength="40" enterkeyhint="done">
             <div class="block-tools">
-              <button class="icon-btn subtle" data-act="iv-up" data-i="${i}" aria-label="nach oben" ${i === 0 ? 'disabled' : ''}>${I.up}</button>
-              <button class="icon-btn subtle" data-act="iv-dup" data-i="${i}" aria-label="duplizieren">${I.copy}</button>
-              <button class="icon-btn subtle" data-act="iv-del" data-i="${i}" aria-label="löschen" ${ivs.length < 2 ? 'disabled' : ''}>${I.trash}</button>
+              <button class="icon-btn subtle" data-act="iv-up" data-i="${i}" aria-label="${t('a.up')}" ${i === 0 ? 'disabled' : ''}>${I.up}</button>
+              <button class="icon-btn subtle" data-act="iv-dup" data-i="${i}" aria-label="${t('a.dup')}">${I.copy}</button>
+              <button class="icon-btn subtle" data-act="iv-del" data-i="${i}" aria-label="${t('a.delete')}" ${ivs.length < 2 ? 'disabled' : ''}>${I.trash}</button>
             </div>
           </div>
-          <div class="row"><span class="row-label"><span class="dot" style="background:${intervalColor(iv, i)}"></span>Dauer</span>${timeStepper(i, 'work', iv.work, 1)}</div>
-          <div class="row iv-rest"><span class="row-label"><span class="dot" style="background:${KIND.rest.color}"></span>Pause</span>${timeStepper(i, 'rest', iv.rest, 0)}</div>
+          <div class="row"><span class="row-label"><span class="dot" style="background:${intervalColor(iv, i)}"></span>${t('iv.dur')}</span>${timeStepper(i, 'work', iv.work, 1)}</div>
+          <div class="row iv-rest"><span class="row-label"><span class="dot" style="background:${KIND.rest.color}"></span>${t('iv.pause')}</span>${timeStepper(i, 'rest', iv.rest, 0)}</div>
         </div>`,
         )
         .join('')}
     </div>
-    <button class="add-block" data-act="iv-add">${I.plus} Intervall hinzufügen</button>
+    <button class="add-block" data-act="iv-add">${I.plus} ${t('iv.add')}</button>
     <div class="card group">
-      ${fieldRow({ id: 'repeats', type: 'count', label: 'Wiederholungen', min: 1, max: 99 }, cfg.repeats)}
-      ${fieldRow({ id: 'cool', type: 'time', label: 'Cool-down', min: 0 }, cfg.cool)}
+      ${fieldRow({ id: 'repeats', type: 'count', label: t('f.repeats'), min: 1, max: 99 }, cfg.repeats)}
+      ${fieldRow({ id: 'cool', type: 'time', label: t('f.cool'), min: 0 }, cfg.cool)}
     </div>`;
 }
 
@@ -387,8 +389,8 @@ function saveEdit() {
 function fieldDef(id) {
   const def = MODES[editMode];
   if (def.fields) return def.fields.find((f) => f.id === id);
-  if (id === 'repeats') return { id, type: 'count', label: 'Wiederholungen', min: 1, max: 99 };
-  return { id, type: 'time', min: 0, label: id === 'prep' ? 'Vorbereiten' : 'Cool-down' };
+  if (id === 'repeats') return { id, type: 'count', label: t('f.repeats'), min: 1, max: 99 };
+  return { id, type: 'time', min: 0, label: id === 'prep' ? t('f.prep') : t('f.cool') };
 }
 
 function stepTime(v, dir) {
@@ -447,12 +449,12 @@ function openTimePicker(label, seconds, min, cb) {
   const secs = Array.from({ length: 60 }, (_, i) => i);
   const quick = [10, 20, 30, 45, 60, 90, 120, 180, 300, 600];
   openSheet(
-    `<div class="sheet-head"><button class="link" data-act="sheet-close">Abbrechen</button><b>${esc(label)}</b><button class="link strong" data-act="time-ok">Fertig</button></div>
+    `<div class="sheet-head"><button class="link" data-act="sheet-close">${t('s.cancel')}</button><b>${esc(label)}</b><button class="link strong" data-act="time-ok">${t('s.done')}</button></div>
      <div class="wheels">
        ${wheel('m', mins, Math.floor(seconds / 60), (v) => v)}
-       <span class="wheel-unit">min</span>
+       <span class="wheel-unit">${t('s.min')}</span>
        ${wheel('s', secs, seconds % 60, pad)}
-       <span class="wheel-unit">sek</span>
+       <span class="wheel-unit">${t('s.sec')}</span>
        <div class="wheel-highlight"></div>
      </div>
      <div class="chips center">${quick.map((q) => `<button class="chip" data-act="time-quick" data-v="${q}">${fmtSec(q)}</button>`).join('')}</div>`,
@@ -477,7 +479,7 @@ function openTimePicker(label, seconds, min, cb) {
 function openCountPicker(label, value, min, max, cb) {
   const vals = Array.from({ length: max - min + 1 }, (_, i) => i + min);
   openSheet(
-    `<div class="sheet-head"><button class="link" data-act="sheet-close">Abbrechen</button><b>${esc(label)}</b><button class="link strong" data-act="count-ok">Fertig</button></div>
+    `<div class="sheet-head"><button class="link" data-act="sheet-close">${t('s.cancel')}</button><b>${esc(label)}</b><button class="link strong" data-act="count-ok">${t('s.done')}</button></div>
      <div class="wheels single">${wheel('n', vals, value)}<div class="wheel-highlight"></div></div>`,
     (sheet) => {
       const g = mountWheel(sheet.querySelector('[data-wheel=n]'), vals, value);
@@ -492,7 +494,7 @@ function openCountPicker(label, value, min, max, cb) {
 
 function openNamePrompt(title, initial, cb) {
   openSheet(
-    `<div class="sheet-head"><button class="link" data-act="sheet-close">Abbrechen</button><b>${esc(title)}</b><button class="link strong" data-act="name-ok">Sichern</button></div>
+    `<div class="sheet-head"><button class="link" data-act="sheet-close">${t('s.cancel')}</button><b>${esc(title)}</b><button class="link strong" data-act="name-ok">${t('s.save')}</button></div>
      <div class="sheet-body"><input class="text-input" id="name-input" value="${esc(initial)}" maxlength="40" enterkeyhint="done"></div>`,
     (sheet) => {
       const inp = sheet.querySelector('#name-input');
@@ -520,33 +522,42 @@ function openSettings() {
       <input type="checkbox" class="switch" data-set="${key}" ${st[key] ? 'checked' : ''}>
     </label>`;
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const cur = st.lang && LANGS[st.lang] ? st.lang : 'auto';
   openSheet(
-    `<div class="sheet-head"><span></span><b>Einstellungen</b><button class="link strong" data-act="sheet-close">Fertig</button></div>
+    `<div class="sheet-head"><span></span><b>${t('set.title')}</b><button class="link strong" data-act="sheet-close">${t('s.done')}</button></div>
      <div class="sheet-body">
        <div class="card group">
-         <div class="row"><span class="row-label">Dein Name</span><input class="name-input" data-set="name" value="${esc(st.name || '')}" placeholder="für die Begrüssung" maxlength="24" autocomplete="given-name"></div>
+         <div class="row"><span class="row-label">${t('set.lang')}</span>
+           <select class="select" data-set="lang">
+             <option value="auto" ${cur === 'auto' ? 'selected' : ''}>${esc(t('set.langAuto', { name: LANGS[deviceLang()].name }))}</option>
+             ${Object.entries(LANGS).map(([k, v]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${v.name}</option>`).join('')}
+           </select>
+         </div>
+         <div class="row"><span class="row-label">${t('set.name')}</span><input class="name-input" data-set="name" value="${esc(st.name || '')}" placeholder="${esc(t('set.namePh'))}" maxlength="24" autocomplete="given-name"></div>
        </div>
        <div class="card group">
-         ${tg('sound', 'Signaltöne')}
-         ${tg('voice', 'Sprachansage', 'Sagt Übung / Pause an')}
-         ${tg('vibrate', 'Vibration', 'Nur Android')}
-         ${tg('keepAwake', 'Bildschirm immer an', 'Auch im Menü – im Timer sowieso immer')}
-         ${tg('ignoreMute', 'Ton auch bei Stumm-Schalter', 'iPhone: Lautstärke-Tasten regeln. Aus = Ton folgt dem Schalter')}
-         <div class="row"><span class="row-label">Lautstärke</span><input type="range" min="0.1" max="1" step="0.05" value="${st.volume}" data-set="volume" class="range"></div>
-         <div class="row"><span class="row-label">Test</span><button class="ghost-btn" data-act="test-sound">${I.sound} Ton testen</button></div>
+         ${tg('sound', t('set.sound'))}
+         ${tg('voice', t('set.voice'), t('set.voiceSub'))}
+         ${tg('vibrate', t('set.vibrate'), t('set.vibrateSub'))}
+         ${tg('keepAwake', t('set.keepAwake'), t('set.keepAwakeSub'))}
+         ${tg('ignoreMute', t('set.ignoreMute'), t('set.ignoreMuteSub'))}
+         <div class="row"><span class="row-label">${t('set.volume')}</span><input type="range" min="0.1" max="1" step="0.05" value="${st.volume}" data-set="volume" class="range"></div>
+         <div class="row"><span class="row-label">${t('set.test')}</span><button class="ghost-btn" data-act="test-sound">${I.sound} ${t('set.testBtn')}</button></div>
        </div>
-       ${
-         standalone
-           ? ''
-           : `<div class="card tip"><b>Als App installieren</b><p>iPhone: Safari → Teilen → „Zum Home-Bildschirm“. Android: Menü → „App installieren“. Dann läuft der Timer im Vollbild und offline.</p></div>`
-       }
-       <div class="card tip"><b>Tipp</b><p>Kein Ton auf dem iPhone? Lautstärke-Taste hoch drücken, während der Timer läuft. Der Bildschirm bleibt während der App automatisch an.</p></div>
-       ${history.all().length ? `<button class="ghost-btn danger wide" data-act="hist-clear">${I.trash} Verlauf löschen</button>` : ''}
+       ${standalone ? '' : `<div class="card tip"><b>${t('tip.installT')}</b><p>${t('tip.install')}</p></div>`}
+       <div class="card tip"><b>${t('tip.t')}</b><p>${t('tip.body')}</p></div>
+       ${history.all().length ? `<button class="ghost-btn danger wide" data-act="hist-clear">${I.trash} ${t('hist.clear')}</button>` : ''}
      </div>`,
     (sheet) => {
       sheet.addEventListener('change', (e) => {
         const k = e.target.dataset.set;
         if (!k) return;
+        if (k === 'lang') {
+          settings.set({ lang: e.target.value === 'auto' ? null : e.target.value });
+          route(); // re-render the current screen in the new language (closes the sheet)
+          setTimeout(openSettings, 280);
+          return;
+        }
         settings.set({ [k]: e.target.type === 'checkbox' ? e.target.checked : k === 'name' ? e.target.value.trim() : +e.target.value });
         if (k === 'keepAwake') e.target.checked ? keepAwake() : allowSleep();
         if (k === 'ignoreMute') unlockAudio();
@@ -578,8 +589,8 @@ const actions = {
     settings.set({ ferdi: on });
     unlockAudio(); // the tap is a gesture: also unlocks speech on iOS
     renderHome();
-    if (on) speak('Ferdi Modus an!', { hype: true });
-    else toast('Ferdi Modus aus');
+    if (on) speak(t('fv.on'), { hype: true });
+    else toast(t('ferdi.off'));
   },
   'quick-last': () => {
     const h = history.all().find((x) => x.cfg && MODES[x.mode]);
@@ -589,10 +600,10 @@ const actions = {
   'test-sound': () => {
     unlockAudio();
     cue.work();
-    speak('Los geht’s');
+    speak(t('v.test'));
   },
   'hist-clear': () => {
-    if (!confirm('Verlauf wirklich löschen?')) return;
+    if (!confirm(t('hist.confirm'))) return;
     history.clear();
     closeSheet();
     if (!location.hash || location.hash === '#/') renderHome();
@@ -612,7 +623,7 @@ const actions = {
   },
   'fav-del': (el) => {
     const f = favorites.all().find((x) => x.id === el.dataset.id);
-    if (!f || !confirm(`„${f.name}“ löschen?`)) return;
+    if (!f || !confirm(t('t.delConfirm', { name: f.name }))) return;
     favorites.remove(f.id);
     renderHome();
   },
@@ -640,9 +651,9 @@ const actions = {
   },
   'save-fav': () => {
     const def = MODES[editMode];
-    openNamePrompt('Favorit speichern', `${def.title} ${fmtTotal(summary(editMode, editCfg).total)}`, (name) => {
+    openNamePrompt(t('t.favTitle'), `${def.title} ${fmtTotal(summary(editMode, editCfg).total)}`, (name) => {
       favorites.add({ name, mode: editMode, cfg: structuredClone(editCfg) });
-      toast('Als Favorit gespeichert');
+      toast(t('t.favSaved'));
     });
   },
   'share-cfg': () => {
@@ -658,7 +669,7 @@ const actions = {
     const i = +el.dataset.i;
     const k = el.dataset.k;
     const iv = editCfg.intervals[i];
-    openTimePicker(k === 'rest' ? `Pause nach ${intervalName(iv, i)}` : intervalName(iv, i), iv[k], k === 'rest' ? 0 : 1, (v) => {
+    openTimePicker(k === 'rest' ? t('iv.restAfter', { name: intervalName(iv, i) }) : intervalName(iv, i), iv[k], k === 'rest' ? 0 : 1, (v) => {
       iv[k] = v;
       saveEdit();
     });
@@ -759,7 +770,7 @@ function startRun(mode, cfg, title) {
   keepAwake(); // a running workout always keeps the screen on
   if (isIOS && settings.get().sound && !settings.get().ignoreMute && !settings.get().iosHintShown) {
     settings.set({ iosHintShown: true });
-    setTimeout(() => toast('Ton folgt dem Stumm-Schalter – änderbar in den Einstellungen', 5000), 600);
+    setTimeout(() => toast(t('t.iosHint'), 5000), 600);
   }
   current = { mode, cfg: structuredClone(cfg), title };
   go('/run');
@@ -778,7 +789,7 @@ function renderRun() {
   if (engine) engine.destroy();
   const program = compile(current.mode, current.cfg);
   if (!program.segments.length) {
-    toast('Workout ist leer');
+    toast(t('t.empty'));
     return go('/m/' + current.mode);
   }
   const total = totalMs(program);
@@ -789,15 +800,15 @@ function renderRun() {
       <div class="run-bg"></div>
       <div class="run-drain" id="drain"></div>
       <header class="run-top">
-        <button class="round-btn glass" data-run="close" aria-label="Beenden">${I.close}</button>
+        <button class="round-btn glass" data-run="close" aria-label="${t('a.end')}">${I.close}</button>
         <div class="run-title">
           <b>${esc(current.title)}</b>
-          ${settings.get().ferdi ? '<span class="ferdi-badge">Ferdi Modus</span>' : ''}
+          ${settings.get().ferdi ? `<span class="ferdi-badge">${t('ferdi.title')}</span>` : ''}
           <span class="wake-pill" id="wake-pill"></span>
         </div>
         <div class="topbar-right">
-          <button class="round-btn glass" data-run="mute" aria-label="Ton">${settings.get().sound ? I.sound : I.mute}</button>
-          <button class="round-btn glass" data-run="lock" aria-label="Sperren">${I.unlock}</button>
+          <button class="round-btn glass" data-run="mute" aria-label="${t('a.sound')}">${settings.get().sound ? I.sound : I.mute}</button>
+          <button class="round-btn glass" data-run="lock" aria-label="${t('a.lock')}">${I.unlock}</button>
         </div>
       </header>
 
@@ -808,11 +819,11 @@ function renderRun() {
           <div class="time" id="time">0:00</div>
           <div class="time-sub" id="time-sub"></div>
         </div>
-        <div class="paused-tag" id="paused-tag">Pause · tippen zum Weitermachen</div>
+        <div class="paused-tag" id="paused-tag">${t('r.paused')}</div>
       </div>
       <div class="next" id="next"></div>
 
-      ${program.counter ? `<button class="counter-btn" data-run="round"><span class="counter-n" id="counter">0</span><span class="counter-l">Runden</span><span class="counter-split" id="split"></span></button>` : ''}
+      ${program.counter ? `<button class="counter-btn" data-run="round"><span class="counter-n" id="counter">0</span><span class="counter-l">${t('r.rounds')}</span><span class="counter-split" id="split"></span></button>` : ''}
       ${isStopwatch ? `<div class="laps" id="laps"></div>` : ''}
 
       <div class="total ${total === Infinity ? 'hidden' : ''}">
@@ -823,20 +834,20 @@ function renderRun() {
       <div class="controls">
         ${
           isStopwatch
-            ? `<button class="ctl" data-run="lap" aria-label="Runde">${I.flag}<small>Runde</small></button>`
+            ? `<button class="ctl" data-run="lap" aria-label="${t('r.lap')}">${I.flag}<small>${t('r.lap')}</small></button>`
             : program.finishButton
-              ? `<button class="ctl" data-run="undo-round" aria-label="Runde zurück">${I.minus}<small>−1 Runde</small></button>`
-              : `<button class="ctl" data-run="prev" aria-label="Zurück">${I.prev}</button>`
+              ? `<button class="ctl" data-run="undo-round" aria-label="${t('r.minusRound')}">${I.minus}<small>${t('r.minusRound')}</small></button>`
+              : `<button class="ctl" data-run="prev" aria-label="${t('a.prev')}">${I.prev}</button>`
         }
-        <button class="ctl main" data-run="toggle" id="toggle" aria-label="Pause">${I.pause}</button>
+        <button class="ctl main" data-run="toggle" id="toggle" aria-label="${t('a.pause')}">${I.pause}</button>
         ${
           isStopwatch || program.finishButton
-            ? `<button class="ctl" data-run="finish" aria-label="Fertig">${I.check}<small>Fertig</small></button>`
-            : `<button class="ctl" data-run="next" aria-label="Weiter">${I.next}</button>`
+            ? `<button class="ctl" data-run="finish" aria-label="${t('r.finish')}">${I.check}<small>${t('r.finish')}</small></button>`
+            : `<button class="ctl" data-run="next" aria-label="${t('a.next')}">${I.next}</button>`
         }
       </div>
 
-      <div class="lock-shield" data-run="shield"><button class="round-btn glass big" data-run="unlock-hold">${I.lock}</button><span>Gedrückt halten zum Entsperren</span></div>
+      <div class="lock-shield" data-run="shield"><button class="round-btn glass big" data-run="unlock-hold">${I.lock}</button><span>${t('r.unlock')}</span></div>
       <div class="done" id="done"></div>
     </div>`;
 
@@ -864,7 +875,7 @@ function renderRun() {
   const offWake = onWakeChange((m) => {
     const pill = document.getElementById('wake-pill');
     if (!pill) return offWake();
-    pill.innerHTML = m === 'off' ? '<span class="dot"></span> Bildschirm kann sperren' : '<span class="dot on"></span> Bildschirm bleibt an';
+    pill.innerHTML = m === 'off' ? `<span class="dot"></span> ${t('wake.pillOff')}` : `<span class="dot on"></span> ${t('wake.pillOn')}`;
     pill.classList.toggle('warn', m === 'off');
   });
 
@@ -874,7 +885,7 @@ function renderRun() {
       const ferdi = settings.get().ferdi;
       const nx = engine.segs[engine.idx + 1];
       // Ferdi: 3 s before the next work phase starts, shout instead of the first two beeps
-      if (ferdi && n === 3 && nx && (nx.kind === 'work' || nx.kind === 'up')) speak('Ferdi, es geht gleich weiter!', { hype: true });
+      if (ferdi && n === 3 && nx && (nx.kind === 'work' || nx.kind === 'up')) speak(t('fv.soon'), { hype: true });
       if (!(ferdi && n > 1 && nx && (nx.kind === 'work' || nx.kind === 'up'))) cue.count(n);
       // pulse the digits on 3-2-1
       runView.time.classList.remove('pulse');
@@ -884,7 +895,7 @@ function renderRun() {
     halfway: (s) => {
       if (!settings.get().halfway) return;
       cue.halfway();
-      if (s.dur >= 60000) speak('Halbzeit');
+      if (s.dur >= 60000) speak(t('v.halfway'));
     },
     tick: updateRun,
     done: onDone,
@@ -909,16 +920,16 @@ function onSegment(seg, idx, { silent }) {
   let text = seg.speakName ? seg.label : KIND[seg.kind].speak;
   if (isWork && seg.rounds > 1 && !seg.speakName) {
     const lastWork = !segs.slice(idx + 1).some((s) => s.kind === 'work');
-    if (lastWork) text = 'Letzte Runde!';
-    else if (seg.round && current.mode === 'runden') text = `Runde ${seg.round}`;
+    if (lastWork) text = t('v.lastRound');
+    else if (seg.round && current.mode === 'runden') text = t('v.roundN', { n: seg.round });
   }
   if (seg.kind === 'rest' || seg.kind === 'setrest') {
     const nx = segs[idx + 1];
-    if (nx && nx.speakName) text = `Pause. Danach ${nx.label}`;
+    if (nx && nx.speakName) text = t('v.restThen', { name: nx.label });
   }
   if (settings.get().ferdi) {
-    if (seg.kind === 'prep' || idx === 0) return setTimeout(() => speak('Ferdi, es geht los!', { hype: true }), 250);
-    if (seg.kind === 'rest' || seg.kind === 'setrest') return setTimeout(() => speak('Ferdi, Pause!', { hype: true }), 250);
+    if (seg.kind === 'prep' || idx === 0) return setTimeout(() => speak(t('fv.go'), { hype: true }), 250);
+    if (seg.kind === 'rest' || seg.kind === 'setrest') return setTimeout(() => speak(t('fv.pause'), { hype: true }), 250);
   }
   // give the beep a moment before the voice
   setTimeout(() => speak(text), 350);
@@ -927,8 +938,8 @@ function onSegment(seg, idx, { silent }) {
 function segMeta(seg) {
   const parts = [];
   if (seg.block && seg.blocks > 1) parts.push(esc(seg.block));
-  if (seg.rounds > 1) parts.push(`Runde <b>${seg.round}</b>/${seg.rounds}`);
-  if (seg.sets > 1) parts.push(`Satz <b>${seg.set}</b>/${seg.sets}`);
+  if (seg.rounds > 1) parts.push(t('r.metaRound', { r: seg.round, n: seg.rounds }));
+  if (seg.sets > 1) parts.push(t('r.metaSet', { r: seg.set, n: seg.sets }));
   return parts.join('<i>·</i>');
 }
 
@@ -952,10 +963,10 @@ function updateRun() {
     const upMs = el;
     main = fmtUp(upMs);
     if (e.p.laps) sub = '.' + pad(Math.floor((upMs % 1000) / 10));
-    else if (seg.dur !== Infinity) sub = `Cap ${fmtTotal(seg.dur)}`;
+    else if (seg.dur !== Infinity) sub = t('r.cap', { t: fmtTotal(seg.dur) });
   } else {
     main = fmtDown(seg.dur - el);
-    sub = `von ${fmtTotal(seg.dur)}`;
+    sub = t('r.of', { t: fmtTotal(seg.dur) });
   }
   setHTML(v.time, 'time', main);
   setHTML(v.timeSub, 'sub', sub);
@@ -977,10 +988,10 @@ function updateRun() {
     v.next,
     'next',
     nx
-      ? `<i style="background:${nx.color}"></i><span>Danach</span><b>${esc(nx.label)}</b><em>${nx.dur !== Infinity ? fmtTotal(nx.dur) : ''}</em>`
+      ? `<i style="background:${nx.color}"></i><span>${t('r.next')}</span><b>${esc(nx.label)}</b><em>${nx.dur !== Infinity ? fmtTotal(nx.dur) : ''}</em>`
       : e.p.laps || seg.up
         ? ''
-        : '<i style="background:#fff"></i><span>Finale</span><b>Gib alles</b>',
+        : `<i style="background:#fff"></i><span>${t('r.finale')}</span><b>${t('r.giveAll')}</b>`,
   );
   v.next.classList.toggle('empty', !v.next.innerHTML);
 
@@ -989,13 +1000,13 @@ function updateRun() {
     setHTML(v.counter, 'counter', String(e.rounds));
     const s = e.roundSplits;
     const lastSplit = s.length ? s[s.length - 1] - (s.length > 1 ? s[s.length - 2] : 0) : null;
-    setHTML(v.split, 'split', lastSplit != null ? `letzte Runde ${fmtUp(lastSplit)} · tippen = +1` : 'tippen = +1 Runde');
+    setHTML(v.split, 'split', lastSplit != null ? t('r.lastSplit', { t: fmtUp(lastSplit) }) : t('r.tapPlus'));
   }
   if (v.laps) {
     const html = e.laps
       .map((l, i) => ({ l, i }))
       .reverse()
-      .map(({ l, i }) => `<div class="lap"><span>Runde ${i + 1}</span><span>${fmtUp(l.split)}.${pad(Math.floor((l.split % 1000) / 10))}</span><span class="dim">${fmtUp(l.at)}</span></div>`)
+      .map(({ l, i }) => `<div class="lap"><span>${t('r.lapN', { n: i + 1 })}</span><span>${fmtUp(l.split)}.${pad(Math.floor((l.split % 1000) / 10))}</span><span class="dim">${fmtUp(l.at)}</span></div>`)
       .join('');
     setHTML(v.laps, 'laps', html);
   }
@@ -1019,7 +1030,7 @@ function updateRun() {
 function onDone() {
   if (!runView) return;
   cue.done();
-  setTimeout(() => (settings.get().ferdi ? speak('Ferdi, wir sind fertig!', { hype: true }) : speak('Geschafft! Stark!')), 900);
+  setTimeout(() => (settings.get().ferdi ? speak(t('fv.done'), { hype: true }) : speak(t('v.done'))), 900);
   const e = engine;
   const dur = e.totalElapsed();
   history.add({ mode: current.mode, title: current.title, cfg: current.cfg, dur, rounds: e.rounds || e.laps.length || 0 });
@@ -1030,23 +1041,23 @@ function onDone() {
   v.drain.style.transform = 'scaleY(0)';
   const extra =
     e.rounds > 0
-      ? `<div class="done-stat"><b>${e.rounds}</b><span>Runden</span></div>`
+      ? `<div class="done-stat"><b>${e.rounds}</b><span>${t('d.rounds')}</span></div>`
       : e.laps.length
-        ? `<div class="done-stat"><b>${e.laps.length}</b><span>Runden</span></div>`
+        ? `<div class="done-stat"><b>${e.laps.length}</b><span>${t('d.rounds')}</span></div>`
         : '';
   v.done.innerHTML = `
     <div class="done-card">
       <img class="done-logo" src="/brand/logo.png" alt="" onerror="this.remove()">
       <div class="done-emoji">${I.check}</div>
-      <h2>Geschafft<span>.</span></h2>
-      <p class="done-sub">${esc(current.title)} · ${new Date().toLocaleDateString('de-CH', { weekday: 'long' })}</p>
+      <h2>${t('d.title')}<span>.</span></h2>
+      <p class="done-sub">${esc(current.title)} · ${new Date().toLocaleDateString(locale(), { weekday: 'long' })}</p>
       <div class="done-stats">
-        <div class="done-stat"><b>${fmtUp(dur)}</b><span>Zeit</span></div>
+        <div class="done-stat"><b>${fmtUp(dur)}</b><span>${t('d.time')}</span></div>
         ${extra}
       </div>
       <div class="done-actions">
-        <button class="ghost-btn wide" data-run="again">${I.restart} Nochmal</button>
-        <button class="start-btn" data-run="exit">Fertig</button>
+        <button class="ghost-btn wide" data-run="again">${I.restart} ${t('d.again')}</button>
+        <button class="start-btn" data-run="exit">${t('d.exit')}</button>
       </div>
     </div>`;
 }
@@ -1077,14 +1088,14 @@ const runActions = {
   mute: (el) => {
     settings.set({ sound: !settings.get().sound, voice: !settings.get().sound });
     el.innerHTML = settings.get().sound ? I.sound : I.mute;
-    toast(settings.get().sound ? 'Ton an' : 'Ton aus');
+    toast(settings.get().sound ? t('t.soundOn') : t('t.soundOff'));
   },
   lock: () => {
     document.body.classList.add('locked');
-    toast('Gesperrt – Schloss gedrückt halten');
+    toast(t('t.locked'));
   },
   close: () => {
-    if (engine && engine.started && !engine.finished && !confirm('Workout beenden?')) return;
+    if (engine && engine.started && !engine.finished && !confirm(t('t.endConfirm'))) return;
     current = null;
     go('/');
   },
