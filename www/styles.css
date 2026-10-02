@@ -420,3 +420,32 @@ svg { display: block; }
 .reset-link { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 22px auto 0; padding: 10px 14px; color: var(--dim); font-size: 13px; font-weight: 600; border-radius: 12px; }
 .reset-link svg { width: 14px; height: 14px; }
 .reset-link:active { background: var(--card); }
+
+/* full version: home banner, settings card, paywall */
+.pro-banner { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 14px 16px 14px 18px; border-radius: 18px; text-align: left; background: var(--card); box-shadow: inset 0 0 0 1.5px #ffd60a55; }
+.pro-banner > span:first-child { flex: 1; display: flex; flex-direction: column; }
+.pro-banner b { font: italic 900 22px/1.05 var(--display); text-transform: uppercase; color: var(--accent); }
+.pro-banner small { margin-top: 3px; color: var(--dim); font-size: 13px; font-weight: 600; }
+.pro-banner.over { background: var(--accent); box-shadow: 0 10px 30px #ffd60a2a; }
+.pro-banner.over b, .pro-banner.over small { color: var(--accent-ink); }
+.pro-banner-cta svg { width: 20px; height: 20px; color: var(--dim); }
+.pro-banner.over .pro-banner-cta svg { color: var(--accent-ink); }
+.pro-card .row-label small { color: var(--dim); }
+.pro-card .row + .row { justify-content: space-between; min-height: 48px; }
+.pro-card .link { font-size: 14px; }
+.pro-ok { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+.pro-ok svg { width: 18px; height: 18px; stroke-width: 3; }
+.paywall { text-align: center; padding-bottom: 10px; }
+.pw-hero { padding: 6px 4px 4px; }
+.pw-badge { display: inline-block; position: relative; padding-bottom: 8px; font: italic 900 54px/1 var(--display); color: #fff; }
+.pw-badge::after { content: ''; position: absolute; left: -2px; right: -6px; bottom: 0; height: 8px; background: var(--accent); transform: skewX(-16deg); }
+.pw-hero h3 { margin: 18px 0 6px; font: italic 900 30px/1.05 var(--display); text-transform: uppercase; }
+.pw-hero p { margin: 0; color: var(--dim); font-size: 15px; line-height: 1.4; }
+.pw-list { list-style: none; margin: 20px 0; padding: 0; text-align: left; display: flex; flex-direction: column; gap: 12px; }
+.pw-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; font-weight: 600; line-height: 1.35; }
+.pw-list svg { flex: none; width: 22px; height: 22px; padding: 3px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); stroke-width: 3.2; }
+.pw-buy { font-size: clamp(18px, 5.6vw, 24px); white-space: nowrap; letter-spacing: .01em; padding: 0 12px; }
+.pw-buy:disabled, .pro-card button:disabled { opacity: .5; }
+.pw-fine { margin: 10px 0 4px; color: var(--dim); font-size: 12px; }
+.pw-links { display: flex; justify-content: center; gap: 22px; margin-top: 6px; }
+.pw-links .link { font-size: 14px; color: var(--dim); }

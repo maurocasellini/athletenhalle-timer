@@ -9,10 +9,36 @@
 | Subtitle (EN) | Tabata, EMOM, AMRAP & Intervals |
 | Kategorie | Gesundheit und Fitness (Health & Fitness) |
 | Altersfreigabe | 4+ (keine sensiblen Inhalte) |
-| Preis | Gratis |
+| Preis | Gratis-Download, 3 Tage Test, dann In-App-Kauf **CHF 10.00** einmalig |
 | Bundle-ID | com.maurocasellini.grit |
 | Datenschutz-URL | (öffentliche URL von `docs/privacy.html`) |
 | Support-URL | kann dieselbe Seite sein |
+
+## In-App-Kauf anlegen (App Store Connect → deine App → Monetarisierung → In-App-Käufe)
+
+| Feld | Wert |
+|---|---|
+| Typ | **Nicht-verbrauchbar** (Non-Consumable) |
+| Referenzname | GRIT Vollversion |
+| Produkt-ID | **`com.maurocasellini.grit.full`** (muss genau so heißen, steht so im Code) |
+| Preis | CHF 10.00 (Apple rechnet die anderen Länder automatisch um) |
+| Familienfreigabe | **Ein** |
+| Anzeigename / Beschreibung DE | GRIT Vollversion / Alle Timer ohne Einschränkung – einmalig, kein Abo. |
+| Display name / description EN | GRIT Full Version / All timers without limits – one-time, no subscription. |
+| Screenshot für die Prüfung | Screenshot der Bezahlseite |
+
+Wichtig: Beim **ersten** Einreichen muss der In-App-Kauf **zusammen mit der App-Version** zur Prüfung (in der Version unter „In-App-Käufe“ hinzufügen).
+
+Vorher einmalig: **Geschäftliches → Vereinbarung für kostenpflichtige Apps** akzeptieren, Bankkonto und Steuerformulare hinterlegen.
+
+## Gratis-Codes für Kollegen (Angebotscodes)
+
+1. App Store Connect → deine App → In-App-Kauf **GRIT Vollversion** → **Angebotscodes** → Neuer Code.
+2. Angebot: **kostenlos**, Anzahl Codes (z. B. 20), Ablaufdatum festlegen.
+3. Codes herunterladen und per WhatsApp verschicken.
+4. Kollegen: in GRIT → Bezahlseite oder Einstellungen → **„Code einlösen“**. Alternativ App Store → Profilbild → „Geschenkkarte oder Code einlösen“.
+
+Jeder Code funktioniert nur einmal. Hinweis: Angebotscodes für einmalige Käufe sind bei Apple relativ neu. Mögliche Mindest-iOS-Version und aktuelle Limits beim Erstellen in App Store Connect prüfen.
 
 ## Beschreibung (DE)
 
@@ -35,6 +61,10 @@ IM TRAINING
 • Funktioniert bei gesperrtem Bildschirm und mit Stumm-Schalter
 • Bildschirm bleibt während des Trainings an
 • Sperrmodus gegen versehentliches Tippen
+
+PREIS
+• 3 Tage alles gratis testen
+• Danach einmalig CHF 10 – kein Abo, mit Familienfreigabe
 
 DATENSCHUTZ
 • Kein Konto, kein Login, keine Werbung, kein Tracking
@@ -66,6 +96,10 @@ DURING YOUR WORKOUT
 • Screen stays on while you train
 • Lock mode against accidental taps
 
+PRICE
+• Try everything free for 3 days
+• Then a one-time purchase – no subscription, Family Sharing included
+
 PRIVACY
 • No account, no login, no ads, no tracking
 • No internet connection needed – everything stays on your iPhone
@@ -82,7 +116,8 @@ Languages: English, Deutsch, Français, Italiano, Español, Português
 ## App-Datenschutz („Privacy Nutrition Label“)
 
 App Store Connect → App-Datenschutz → **„Nein, wir erfassen keine Daten von dieser App“**.
-(Stimmt so: keine Netzwerkzugriffe, keine Analytics, keine Drittanbieter-SDKs; Daten nur lokal.)
+(Stimmt so: keine Netzwerkzugriffe, keine Analytics, keine Drittanbieter-SDKs; Daten nur lokal.
+Der Kauf läuft über Apples StoreKit und wird nicht an eigene Server gesendet, deshalb ist auch „Kaufhistorie“ nicht anzugeben.)
 
 ## Exportkonformität
 
@@ -99,8 +134,14 @@ music keeps playing. The audio session is only active while a workout is running
 
 To test: open "Tabata", tap Start, lock the device – cues continue every few seconds.
 No account or login is required. The app collects no data and makes no network requests.
+
+Monetisation: all features are free for 3 days after first launch. After that, starting a
+workout shows a paywall for a one-time non-consumable in-app purchase "GRIT Full Version"
+(com.maurocasellini.grit.full, Family Sharing enabled). "Restore purchases" and "Redeem code"
+are on the paywall and in Settings. To see the paywall immediately in review, it also opens
+from the banner on the home screen and from Settings → GRIT Full Version.
 ```
 
 ## EU-Händlerstatus (Digital Services Act)
 
-Bei gratis, privat veröffentlichter App ohne Einnahmen: **„Kein Händler“** wählen.
+Da die App Geld kostet: **„Händler“** wählen und die Firmendaten (Adresse, Telefon, E-Mail) angeben. Diese werden in der EU im App Store angezeigt.

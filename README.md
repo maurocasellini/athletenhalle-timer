@@ -13,6 +13,7 @@ Workout-Timer als iPhone-App: Tabata, Runden/EMOM, Stoppuhr, Intervalle, Countdo
 | Bildschirm bleibt an | `isIdleTimerDisabled` |
 | Vibration bei 3-2-1 / Ende | `UIImpactFeedbackGenerator` |
 | Alle Daten löschen | Einstellungen → „Alle Daten löschen“ (löscht den gesamten lokalen Speicher) |
+| 3 Tage gratis, dann CHF 10 einmalig | StoreKit 2 in `Store.swift`, Teststart im Schlüsselbund, Familienfreigabe, Angebotscodes, Wiederherstellen |
 
 **Funktionsweise:** Die Oberfläche (`www/`) berechnet bei jeder Änderung (Start, Pause, Weiter, Zurück) alle restlichen Töne und Ansagen mit Uhrzeit und übergibt sie an das native Plugin. iOS spielt sie dann selbst ab, auch wenn die Web-Oberfläche im Hintergrund pausiert ist. Läuft kein Workout, gibt die App die Audio-Session frei und iOS darf sie schlafen legen.
 
@@ -24,6 +25,8 @@ www/                       Oberfläche (HTML/CSS/JS, kein Build nötig)
   js/main.js               UI, Editor, Timer-Screen, Ton-Fahrplan (buildCues)
 ios/App/App/
   WorkoutAudio.swift       natives Plugin: Audio-Session, Töne, Sprache, Bildschirm an
+  Store.swift              In-App-Kauf (StoreKit 2), 3-Tage-Test, Code einlösen
+  GRIT.storekit            Test-Shop für Xcode (Käufe ohne echtes Geld)
   PrivacyInfo.xcprivacy    Datenschutz-Manifest (keine Daten, kein Tracking)
   Info.plist               Background-Audio, Sprachen, Dark Mode
 capacitor.config.json      App-ID, Name
@@ -52,6 +55,13 @@ In Xcode:
 
 Nach jeder Änderung in `www/`: `npx cap sync ios`, dann in Xcode erneut ▶.
 
+### Kauf testen, ohne echtes Geld (Xcode)
+1. Signing & Capabilities → **+ Capability** → **In-App Purchase** hinzufügen.
+2. Menü **Product → Scheme → Edit Scheme…** → **Run** → Reiter **Options** → **StoreKit Configuration: GRIT.storekit** → Close.
+3. ▶ Run. Jetzt kaufst du gegen den Test-Shop (Face ID, aber kein Geld).
+4. Testphase sofort beenden: in Xcode **Debug → StoreKit → Manage Transactions** zeigt Käufe zum Löschen. Für die Testphase die App löschen **und** auf dem iPhone den Schlüsselbund-Eintrag zurücksetzen: einfacher die Zeile `static let trialDays: Double = 3` in `Store.swift` kurz auf `0` setzen.
+5. Vor dem Archivieren für den App Store: StoreKit Configuration im Scheme wieder auf **None**, `trialDays` wieder **3**.
+
 ## Testen (wichtig vor dem Upload)
 
 - [ ] Spotify starten, dann GRIT → Tabata starten: Musik läuft weiter, die Beeps kommen dazu
@@ -60,6 +70,8 @@ Nach jeder Änderung in `www/`: `npx cap sync ios`, dann in Xcode erneut ▶.
 - [ ] Entsperren: Anzeige springt an die richtige Stelle
 - [ ] Anruf oder Siri während des Timers: danach geht es weiter
 - [ ] Einstellungen → Alle Daten löschen → App neu öffnen: alles auf Standard
+- [ ] Testphase-Banner auf der Startseite zeigt „noch 3 Tage“
+- [ ] Mit `trialDays = 0`: Start-Knopf öffnet die Bezahlseite, Kauf im Test-Shop schaltet frei, „Käufe wiederherstellen“ funktioniert
 
 ## In den App Store
 

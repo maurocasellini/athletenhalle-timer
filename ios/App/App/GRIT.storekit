@@ -1,0 +1,43 @@
+{
+  "identifier" : "4F3C2B1A",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "10.0",
+      "familyShareable" : true,
+      "internalID" : "6740000001",
+      "localizations" : [
+        {
+          "description" : "Alle Timer ohne Einschränkung – einmalig, kein Abo.",
+          "displayName" : "GRIT Vollversion",
+          "locale" : "de"
+        },
+        {
+          "description" : "All timers without limits – one-time, no subscription.",
+          "displayName" : "GRIT Full Version",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.maurocasellini.grit.full",
+      "referenceName" : "GRIT Vollversion",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "de_CH",
+    "_storefront" : "CHE",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

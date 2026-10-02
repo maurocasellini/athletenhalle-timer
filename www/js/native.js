@@ -12,3 +12,4 @@ export function native(method, args) {
     if (p && p.catch) p.catch(() => {});
   } catch {}
 }
+export const NativeStore = isNative ? C.registerPlugin('Store') : null;

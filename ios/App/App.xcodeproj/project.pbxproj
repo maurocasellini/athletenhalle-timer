@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A7C1E0052F00000000000001 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0062F00000000000001 /* Store.swift */; };
 		A7C1E0012F00000000000001 /* WorkoutAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0022F00000000000001 /* WorkoutAudio.swift */; };
 		A7C1E0032F00000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A7C1E0042F00000000000001 /* PrivacyInfo.xcprivacy */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
@@ -21,6 +22,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A7C1E0062F00000000000001 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
+		A7C1E0072F00000000000001 /* GRIT.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = GRIT.storekit; sourceTree = "<group>"; };
 		A7C1E0022F00000000000001 /* WorkoutAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutAudio.swift; sourceTree = "<group>"; };
 		A7C1E0042F00000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -72,6 +75,8 @@
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				A7C1E0022F00000000000001 /* WorkoutAudio.swift */,
+				A7C1E0062F00000000000001 /* Store.swift */,
+				A7C1E0072F00000000000001 /* GRIT.storekit */,
 				A7C1E0042F00000000000001 /* PrivacyInfo.xcprivacy */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -167,6 +172,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				A7C1E0012F00000000000001 /* WorkoutAudio.swift in Sources */,
+				A7C1E0052F00000000000001 /* Store.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

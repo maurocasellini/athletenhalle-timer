@@ -2,6 +2,7 @@ import { MODES, MODE_ORDER, KIND, STEP_COLORS, compile, totalMs, summary, interv
 import { Engine } from './engine.js';
 import { cue, speak, unlockAudio, nativeOpts } from './audio.js';
 import { isNative, native } from './native.js';
+import { pro, onProChange, proAccess, inTrial, trialLeftMs, buyPro, restorePro, redeemPro } from './pro.js';
 import { keepAwake, allowSleep, onWakeChange } from './wakelock.js';
 import { settings, configs, favorites, history, wipeAll } from './store.js';
 import { I } from './icons.js';
@@ -120,6 +121,7 @@ function renderHome() {
         <p class="eyebrow">${esc(date)}</p>
         <h1 class="display">${esc(greeting())}${name ? `,<br><em>${esc(name)}</em>` : '<em>.</em>'}</h1>
       </section>
+      ${proBanner()}
 
 
       ${
@@ -495,6 +497,96 @@ function openNamePrompt(title, initial, cb) {
   );
 }
 
+// ---------- full version / trial ----------
+function fmtLeft(ms) {
+  const DAY = 86400000;
+  if (ms >= DAY) {
+    const n = Math.max(1, Math.round(ms / DAY));
+    return n === 1 ? t('pw.day') : t('pw.days', { n });
+  }
+  return t('pw.hours', { n: Math.max(1, Math.ceil(ms / 3600000)) });
+}
+const priceLabel = () => pro.price || 'CHF 10.00';
+
+function proBanner() {
+  if (!isNative || !pro.ready || pro.unlocked) return '';
+  const trial = inTrial();
+  return `<button class="pro-banner ${trial ? '' : 'over'}" data-act="paywall">
+    <span><b>${trial ? t('pw.bannerTrial', { left: fmtLeft(trialLeftMs()) }) : t('pw.bannerOver')}</b><small>${t('pw.bannerSub', { price: priceLabel() })}</small></span>
+    <span class="pro-banner-cta">${I.chevron}</span>
+  </button>`;
+}
+
+function proSettingsCard() {
+  const status = pro.unlocked
+    ? t('set.proActive')
+    : inTrial()
+      ? t('set.proTrial', { left: fmtLeft(trialLeftMs()) })
+      : t('set.proExpired');
+  return `<div class="card group pro-card">
+    <div class="row"><span class="row-label">${t('pw.title')}<small>${status}</small></span>
+      ${pro.unlocked ? `<span class="pro-ok">${I.check}</span>` : `<button class="ghost-btn" data-act="pro-buy">${priceLabel()}</button>`}
+    </div>
+    ${pro.unlocked ? '' : `<div class="row"><button class="link" data-act="pro-redeem">${t('pw.redeem')}</button><button class="link" data-act="pro-restore">${t('pw.restore')}</button></div>`}
+  </div>`;
+}
+
+function openPaywall() {
+  const trial = inTrial();
+  openSheet(
+    `<div class="sheet-head"><span></span><b></b><button class="link" data-act="sheet-close">${t('s.cancel')}</button></div>
+     <div class="sheet-body paywall">
+       <div class="pw-hero">
+         <div class="pw-badge">GRIT</div>
+         <h3>${trial ? t('pw.leadTrial', { left: fmtLeft(trialLeftMs()) }) : t('pw.leadOver')}</h3>
+         <p>${t('pw.lead')}</p>
+       </div>
+       <ul class="pw-list">
+         <li>${I.check}<span>${t('pw.f1')}</span></li>
+         <li>${I.check}<span>${t('pw.f2')}</span></li>
+         <li>${I.check}<span>${t('pw.f3')}</span></li>
+         <li>${I.check}<span>${t('pw.f4')}</span></li>
+       </ul>
+       <button class="start-btn pw-buy" data-act="pro-buy">${t('pw.buy', { price: priceLabel() })}</button>
+       <p class="pw-fine">${t('pw.fine')}</p>
+       <div class="pw-links">
+         <button class="link" data-act="pro-redeem">${t('pw.redeem')}</button>
+         <button class="link" data-act="pro-restore">${t('pw.restore')}</button>
+       </div>
+     </div>`,
+  );
+}
+
+let proBusy = false;
+async function proAction(fn, kind) {
+  if (proBusy) return;
+  proBusy = true;
+  document.querySelectorAll('[data-act^="pro-"]').forEach((b) => (b.disabled = true));
+  try {
+    const r = await fn();
+    if (kind === 'buy') {
+      if (r.result === 'pending') toast(t('pw.pending'), 4000);
+      else if (r.result === 'failed' || r.result === 'unavailable') toast(t('pw.failed'), 4000);
+    } else if (kind === 'restore') {
+      toast(r.unlocked ? t('pw.restored') : t('pw.nothing'), 3500);
+    }
+  } finally {
+    proBusy = false;
+    document.querySelectorAll('[data-act^="pro-"]').forEach((b) => (b.disabled = false));
+  }
+}
+
+// purchase, redeemed code, Family Sharing, refund → update whatever is on screen
+onProChange(() => {
+  if (pro.unlocked && sheetRoot.querySelector('.paywall')) {
+    closeSheet();
+    toast(t('pw.thanks'), 3500);
+  } else if (sheetRoot.querySelector('.pro-card')) {
+    sheetRoot.querySelector('.pro-card').outerHTML = proSettingsCard();
+  }
+  if (document.body.className === 'page-home') renderHome();
+});
+
 function openSettings() {
   const st = settings.get();
   const tg = (key, label, sub = '') => `
@@ -507,6 +599,7 @@ function openSettings() {
   openSheet(
     `<div class="sheet-head"><span></span><b>${t('set.title')}</b><button class="link strong" data-act="sheet-close">${t('s.done')}</button></div>
      <div class="sheet-body">
+       ${isNative ? proSettingsCard() : ''}
        <div class="card group">
          <div class="row"><span class="row-label">${t('set.lang')}</span>
            <select class="select" data-set="lang">
@@ -561,6 +654,10 @@ const sheetHandlers = {};
 
 // ---------- actions ----------
 const actions = {
+  paywall: () => openPaywall(),
+  'pro-buy': () => proAction(buyPro, 'buy'),
+  'pro-redeem': () => proAction(redeemPro, 'redeem'),
+  'pro-restore': () => proAction(restorePro, 'restore'),
   home: () => go('/'),
   settings: openSettings,
   'sheet-close': closeSheet,
@@ -748,6 +845,7 @@ document.addEventListener('pointerdown', (e) => {
 
 // ---------- run ----------
 function startRun(mode, cfg, title) {
+  if (!proAccess()) return openPaywall(); // trial over and not bought
   unlockAudio(); // inside the tap gesture
   keepAwake(); // a running workout always keeps the screen on
   current = { mode, cfg: structuredClone(cfg), title };
