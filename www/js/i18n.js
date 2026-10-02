@@ -1,0 +1,172 @@
+// UI + voice language. Default: the phone's language (navigator.languages), overridable in settings.
+import { settings } from './store.js';
+
+export const LANGS = {
+  de: { name: 'Deutsch', locale: 'de-CH', voice: 'de-DE' },
+  en: { name: 'English', locale: 'en-GB', voice: 'en-US' },
+  fr: { name: 'Français', locale: 'fr-CH', voice: 'fr-FR' },
+  it: { name: 'Italiano', locale: 'it-CH', voice: 'it-IT' },
+  es: { name: 'Español', locale: 'es-ES', voice: 'es-ES' },
+  pt: { name: 'Português', locale: 'pt-PT', voice: 'pt-PT' },
+};
+
+const D = {
+  de: {
+    'tip.app': 'Musik läuft weiter: Die Timer-Töne legen sich über Spotify & Co., auch bei Stumm-Schalter und gesperrtem Bildschirm. Lautstärke über die Seitentasten.', 'priv.title': 'Datenschutz', 'priv.body': 'Kein Konto, kein Server, kein Tracking. Alle Einstellungen, Favoriten und der Verlauf bleiben nur auf diesem Gerät.', 'priv.deleteAll': 'Alle Daten löschen', 'priv.deleteConfirm': 'Wirklich alle Daten löschen? Einstellungen, Favoriten und Verlauf werden von diesem Gerät entfernt.', 'priv.deleted': 'Alle Daten gelöscht',
+    'greet.night': 'Nachtschicht', 'greet.morning': 'Guten Morgen', 'greet.day': 'Let’s go', 'greet.evening': 'Guten Abend', 'greet.late': 'Spät dran',
+    'home.again': 'Nochmal', 'home.favorites': 'Favoriten', 'home.favEmpty': 'Workout im Editor bauen, {star} tippen – liegt dann hier für den Schnellstart.', 'home.recent': 'Zuletzt', 'home.roundsN': '{n} Runden',
+    'wake.tap': 'Einmal tippen – dann bleibt der Bildschirm an', 'wake.off': 'Bildschirm darf sich ausschalten', 'wake.on': 'Bildschirm bleibt immer an', 'wake.pillOff': 'Bildschirm kann sperren', 'wake.pillOn': 'Bildschirm bleibt an',
+    'a.settings': 'Einstellungen', 'a.share': 'Teilen', 'a.delete': 'Löschen', 'a.start': 'Starten', 'a.back': 'Zurück', 'a.saveFav': 'Als Favorit speichern', 'a.less': 'weniger', 'a.more': 'mehr', 'a.color': 'Farbe wechseln', 'a.up': 'nach oben', 'a.dup': 'duplizieren', 'a.end': 'Beenden', 'a.sound': 'Ton', 'a.lock': 'Sperren', 'a.pause': 'Pause', 'a.next': 'Weiter', 'a.prev': 'Zurück',
+    'e.open': 'offen', 'e.start': 'Start', 'e.off': 'aus', 'e.reset': 'Standard wiederherstellen', 'e.resetConfirm': 'Alle Einstellungen dieses Timers auf Standard zurücksetzen?', 'e.resetDone': 'Zurückgesetzt',
+    'w.round': 'Runde', 'w.rounds': 'Runden', 'w.set': 'Satz', 'w.sets': 'Sätze', 'w.interval': 'Intervall', 'w.intervals': 'Intervalle', 'w.pause': 'Pause',
+    'sum.stoppuhr': 'Zählt hoch · Rundenzeiten per Tipp', 'sum.countdown': 'Zählt runter bis 0', 'sum.amrap': 'Runden zählen per Tipp auf den Zähler', 'sum.ftCap': 'Time Cap {cap} · Runden zählen', 'sum.ftNo': 'Ohne Time Cap · Runden zählen',
+    'f.prep': 'Vorbereiten', 'f.work': 'Arbeit', 'f.rest': 'Pause', 'f.rounds': 'Runden', 'f.sets': 'Sätze', 'f.setRest': 'Pause zwischen Sätzen', 'f.cool': 'Cool-down', 'f.round': 'Rundendauer', 'f.restRounds': 'Pause zwischen Runden', 'f.dur': 'Dauer', 'f.limit': 'Zeitlimit', 'f.cap': 'Time Cap (0 = keins)', 'f.repeats': 'Wiederholungen',
+    'iv.dur': 'Dauer', 'iv.pause': 'Pause', 'iv.add': 'Intervall hinzufügen', 'iv.n': 'Intervall {n}', 'iv.restAfter': 'Pause nach {name}',
+    'p.classic': 'Klassisch 20/10 × 8', 'p.4sets': '4 Sätze Tabata',
+    'm.tabata': 'Tabata', 'm.tabata.sub': 'Arbeit / Pause im Wechsel', 'm.runden': 'Runden', 'm.runden.sub': 'EMOM · E2MOM · Runden', 'm.stoppuhr': 'Stoppuhr', 'm.stoppuhr.sub': 'Zeit messen mit Runden', 'm.intervalle': 'Intervalle', 'm.intervalle.sub': 'Eigene Abläufe bauen', 'm.countdown': 'Countdown', 'm.countdown.sub': 'Einfacher Timer', 'm.amrap': 'AMRAP', 'm.amrap.sub': 'So viele Runden wie möglich', 'm.fortime': 'For Time', 'm.fortime.sub': 'So schnell wie möglich',
+    's.cancel': 'Abbrechen', 's.done': 'Fertig', 's.save': 'Sichern', 's.min': 'min', 's.sec': 'sek',
+    'set.title': 'Einstellungen', 'set.lang': 'Sprache', 'set.langAuto': 'Automatisch ({name})', 'set.name': 'Dein Name', 'set.namePh': 'für die Begrüssung', 'set.sound': 'Signaltöne', 'set.voice': 'Sprachansage', 'set.voiceSub': 'Sagt Übung / Pause an', 'set.vibrate': 'Vibration', 'set.vibrateSub': 'Bei 3-2-1 und am Ende', 'set.keepAwake': 'Bildschirm immer an', 'set.keepAwakeSub': 'Auch im Menü – im Timer sowieso immer', 'set.volume': 'Lautstärke', 'set.test': 'Test', 'set.testBtn': 'Ton testen', 'tip.t': 'Tipp',
+    'hist.clear': 'Verlauf löschen', 'hist.confirm': 'Verlauf wirklich löschen?',
+    't.copied': 'Link kopiert', 't.copy': 'Link kopieren:', 't.imported': 'Workout übernommen', 't.favSaved': 'Als Favorit gespeichert', 't.favTitle': 'Favorit speichern', 't.delConfirm': '„{name}“ löschen?', 't.soundOn': 'Ton an', 't.soundOff': 'Ton aus', 't.locked': 'Gesperrt – Schloss gedrückt halten', 't.endConfirm': 'Workout beenden?', 't.empty': 'Workout ist leer',
+    'r.paused': 'Pause · tippen zum Weitermachen', 'r.rounds': 'Runden', 'r.lap': 'Runde', 'r.minusRound': '−1 Runde', 'r.finish': 'Fertig', 'r.unlock': 'Gedrückt halten zum Entsperren', 'r.next': 'Danach', 'r.finale': 'Finale', 'r.giveAll': 'Gib alles', 'r.lastSplit': 'letzte Runde {t} · tippen = +1', 'r.tapPlus': 'tippen = +1 Runde', 'r.lapN': 'Runde {n}', 'r.cap': 'Cap {t}', 'r.of': 'von {t}', 'r.metaRound': 'Runde <b>{r}</b>/{n}', 'r.metaSet': 'Satz <b>{r}</b>/{n}', 'r.roundLabel': 'Runde {n}',
+    'd.title': 'Geschafft', 'd.time': 'Zeit', 'd.rounds': 'Runden', 'd.again': 'Nochmal', 'd.exit': 'Fertig',
+    'k.prep': 'Bereit', 'k.work': 'Arbeit', 'k.rest': 'Pause', 'k.setrest': 'Satzpause', 'k.cool': 'Cool-down', 'k.up': 'Go',
+    'v.prep': 'Bereit machen', 'v.work': 'Los', 'v.rest': 'Pause', 'v.setrest': 'Satzpause', 'v.cool': 'Cool down', 'v.up': 'Los', 'v.lastRound': 'Letzte Runde!', 'v.roundN': 'Runde {n}', 'v.restThen': 'Pause. Danach {name}', 'v.halfway': 'Halbzeit', 'v.done': 'Geschafft! Stark!', 'v.test': 'Los geht’s',
+  },
+  en: {
+    'tip.app': 'Your music keeps playing: timer sounds play over Spotify & co., even in silent mode and with the screen locked. Use the side buttons for volume.', 'priv.title': 'Privacy', 'priv.body': 'No account, no server, no tracking. All settings, favourites and history stay on this device only.', 'priv.deleteAll': 'Delete all data', 'priv.deleteConfirm': 'Really delete all data? Settings, favourites and history will be removed from this device.', 'priv.deleted': 'All data deleted',
+    'greet.night': 'Night shift', 'greet.morning': 'Good morning', 'greet.day': 'Let’s go', 'greet.evening': 'Good evening', 'greet.late': 'Late session',
+    'home.again': 'Again', 'home.favorites': 'Favourites', 'home.favEmpty': 'Build a workout in the editor and tap {star} – it will show up here for a quick start.', 'home.recent': 'Recent', 'home.roundsN': '{n} rounds',
+    'wake.tap': 'Tap once – then the screen stays on', 'wake.off': 'Screen may turn off', 'wake.on': 'Screen always stays on', 'wake.pillOff': 'Screen may lock', 'wake.pillOn': 'Screen stays on',
+    'a.settings': 'Settings', 'a.share': 'Share', 'a.delete': 'Delete', 'a.start': 'Start', 'a.back': 'Back', 'a.saveFav': 'Save as favourite', 'a.less': 'less', 'a.more': 'more', 'a.color': 'Change colour', 'a.up': 'Move up', 'a.dup': 'Duplicate', 'a.end': 'End', 'a.sound': 'Sound', 'a.lock': 'Lock', 'a.pause': 'Pause', 'a.next': 'Next', 'a.prev': 'Back',
+    'e.open': 'open', 'e.start': 'Start', 'e.off': 'off', 'e.reset': 'Restore defaults', 'e.resetConfirm': 'Reset all settings of this timer to the defaults?', 'e.resetDone': 'Reset done',
+    'w.round': 'round', 'w.rounds': 'rounds', 'w.set': 'set', 'w.sets': 'sets', 'w.interval': 'interval', 'w.intervals': 'intervals', 'w.pause': 'rest',
+    'sum.stoppuhr': 'Counts up · tap for lap times', 'sum.countdown': 'Counts down to 0', 'sum.amrap': 'Count rounds by tapping the counter', 'sum.ftCap': 'Time cap {cap} · count rounds', 'sum.ftNo': 'No time cap · count rounds',
+    'f.prep': 'Get ready', 'f.work': 'Work', 'f.rest': 'Rest', 'f.rounds': 'Rounds', 'f.sets': 'Sets', 'f.setRest': 'Rest between sets', 'f.cool': 'Cool-down', 'f.round': 'Round length', 'f.restRounds': 'Rest between rounds', 'f.dur': 'Duration', 'f.limit': 'Time limit', 'f.cap': 'Time cap (0 = none)', 'f.repeats': 'Repeats',
+    'iv.dur': 'Duration', 'iv.pause': 'Rest', 'iv.add': 'Add interval', 'iv.n': 'Interval {n}', 'iv.restAfter': 'Rest after {name}',
+    'p.classic': 'Classic 20/10 × 8', 'p.4sets': '4 sets Tabata',
+    'm.tabata': 'Tabata', 'm.tabata.sub': 'Alternating work / rest', 'm.runden': 'Rounds', 'm.runden.sub': 'EMOM · E2MOM · rounds', 'm.stoppuhr': 'Stopwatch', 'm.stoppuhr.sub': 'Measure time with laps', 'm.intervalle': 'Intervals', 'm.intervalle.sub': 'Build your own sequence', 'm.countdown': 'Countdown', 'm.countdown.sub': 'Simple timer', 'm.amrap': 'AMRAP', 'm.amrap.sub': 'As many rounds as possible', 'm.fortime': 'For Time', 'm.fortime.sub': 'As fast as possible',
+    's.cancel': 'Cancel', 's.done': 'Done', 's.save': 'Save', 's.min': 'min', 's.sec': 'sec',
+    'set.title': 'Settings', 'set.lang': 'Language', 'set.langAuto': 'Automatic ({name})', 'set.name': 'Your name', 'set.namePh': 'for the greeting', 'set.sound': 'Beeps', 'set.voice': 'Voice cues', 'set.voiceSub': 'Announces exercise / rest', 'set.vibrate': 'Vibration', 'set.vibrateSub': 'On 3-2-1 and at the end', 'set.keepAwake': 'Keep screen on', 'set.keepAwakeSub': 'In the menu too – always during a timer', 'set.volume': 'Volume', 'set.test': 'Test', 'set.testBtn': 'Test sound', 'tip.t': 'Tip',
+    'hist.clear': 'Clear history', 'hist.confirm': 'Really clear the history?',
+    't.copied': 'Link copied', 't.copy': 'Copy link:', 't.imported': 'Workout imported', 't.favSaved': 'Saved as favourite', 't.favTitle': 'Save favourite', 't.delConfirm': 'Delete “{name}”?', 't.soundOn': 'Sound on', 't.soundOff': 'Sound off', 't.locked': 'Locked – hold the lock to unlock', 't.endConfirm': 'End workout?', 't.empty': 'Workout is empty',
+    'r.paused': 'Paused · tap to continue', 'r.rounds': 'Rounds', 'r.lap': 'Lap', 'r.minusRound': '−1 round', 'r.finish': 'Done', 'r.unlock': 'Hold to unlock', 'r.next': 'Next', 'r.finale': 'Final', 'r.giveAll': 'Give it all', 'r.lastSplit': 'last round {t} · tap = +1', 'r.tapPlus': 'tap = +1 round', 'r.lapN': 'Lap {n}', 'r.cap': 'Cap {t}', 'r.of': 'of {t}', 'r.metaRound': 'Round <b>{r}</b>/{n}', 'r.metaSet': 'Set <b>{r}</b>/{n}', 'r.roundLabel': 'Round {n}',
+    'd.title': 'Done', 'd.time': 'Time', 'd.rounds': 'Rounds', 'd.again': 'Again', 'd.exit': 'Finish',
+    'k.prep': 'Ready', 'k.work': 'Work', 'k.rest': 'Rest', 'k.setrest': 'Set rest', 'k.cool': 'Cool-down', 'k.up': 'Go',
+    'v.prep': 'Get ready', 'v.work': 'Go', 'v.rest': 'Rest', 'v.setrest': 'Set rest', 'v.cool': 'Cool down', 'v.up': 'Go', 'v.lastRound': 'Last round!', 'v.roundN': 'Round {n}', 'v.restThen': 'Rest. Next up: {name}', 'v.halfway': 'Halfway', 'v.done': 'Done! Strong work!', 'v.test': 'Let’s go',
+  },
+  fr: {
+    'tip.app': 'Ta musique continue : les sons du minuteur passent par-dessus Spotify & co., même en mode silencieux et écran verrouillé. Volume avec les boutons latéraux.', 'priv.title': 'Confidentialité', 'priv.body': 'Pas de compte, pas de serveur, pas de suivi. Réglages, favoris et historique restent uniquement sur cet appareil.', 'priv.deleteAll': 'Supprimer toutes les données', 'priv.deleteConfirm': 'Vraiment supprimer toutes les données ? Réglages, favoris et historique seront effacés de cet appareil.', 'priv.deleted': 'Toutes les données supprimées',
+    'greet.night': 'Service de nuit', 'greet.morning': 'Bonjour', 'greet.day': 'C’est parti', 'greet.evening': 'Bonsoir', 'greet.late': 'Séance tardive',
+    'home.again': 'Encore', 'home.favorites': 'Favoris', 'home.favEmpty': 'Crée un workout dans l’éditeur et touche {star} – il apparaîtra ici pour un démarrage rapide.', 'home.recent': 'Récents', 'home.roundsN': '{n} tours',
+    'wake.tap': 'Touche une fois – l’écran reste ensuite allumé', 'wake.off': 'L’écran peut s’éteindre', 'wake.on': 'L’écran reste toujours allumé', 'wake.pillOff': 'L’écran peut se verrouiller', 'wake.pillOn': 'Écran allumé',
+    'a.settings': 'Réglages', 'a.share': 'Partager', 'a.delete': 'Supprimer', 'a.start': 'Démarrer', 'a.back': 'Retour', 'a.saveFav': 'Enregistrer en favori', 'a.less': 'moins', 'a.more': 'plus', 'a.color': 'Changer la couleur', 'a.up': 'Monter', 'a.dup': 'Dupliquer', 'a.end': 'Terminer', 'a.sound': 'Son', 'a.lock': 'Verrouiller', 'a.pause': 'Pause', 'a.next': 'Suivant', 'a.prev': 'Retour',
+    'e.open': 'libre', 'e.start': 'Start', 'e.off': 'off', 'e.reset': 'Rétablir par défaut', 'e.resetConfirm': 'Réinitialiser tous les réglages de ce minuteur ?', 'e.resetDone': 'Réinitialisé',
+    'w.round': 'tour', 'w.rounds': 'tours', 'w.set': 'série', 'w.sets': 'séries', 'w.interval': 'intervalle', 'w.intervals': 'intervalles', 'w.pause': 'pause',
+    'sum.stoppuhr': 'Compte vers le haut · temps au tour d’une touche', 'sum.countdown': 'Compte à rebours jusqu’à 0', 'sum.amrap': 'Compte les tours en touchant le compteur', 'sum.ftCap': 'Time cap {cap} · compter les tours', 'sum.ftNo': 'Sans time cap · compter les tours',
+    'f.prep': 'Préparation', 'f.work': 'Effort', 'f.rest': 'Pause', 'f.rounds': 'Tours', 'f.sets': 'Séries', 'f.setRest': 'Pause entre séries', 'f.cool': 'Retour au calme', 'f.round': 'Durée du tour', 'f.restRounds': 'Pause entre tours', 'f.dur': 'Durée', 'f.limit': 'Limite de temps', 'f.cap': 'Time cap (0 = aucun)', 'f.repeats': 'Répétitions',
+    'iv.dur': 'Durée', 'iv.pause': 'Pause', 'iv.add': 'Ajouter un intervalle', 'iv.n': 'Intervalle {n}', 'iv.restAfter': 'Pause après {name}',
+    'p.classic': 'Classique 20/10 × 8', 'p.4sets': 'Tabata 4 séries',
+    'm.tabata': 'Tabata', 'm.tabata.sub': 'Effort / pause en alternance', 'm.runden': 'Tours', 'm.runden.sub': 'EMOM · E2MOM · tours', 'm.stoppuhr': 'Chrono', 'm.stoppuhr.sub': 'Mesurer le temps avec tours', 'm.intervalle': 'Intervalles', 'm.intervalle.sub': 'Crée ta propre séquence', 'm.countdown': 'Minuteur', 'm.countdown.sub': 'Minuteur simple', 'm.amrap': 'AMRAP', 'm.amrap.sub': 'Un maximum de tours', 'm.fortime': 'For Time', 'm.fortime.sub': 'Le plus vite possible',
+    's.cancel': 'Annuler', 's.done': 'OK', 's.save': 'Enregistrer', 's.min': 'min', 's.sec': 's',
+    'set.title': 'Réglages', 'set.lang': 'Langue', 'set.langAuto': 'Automatique ({name})', 'set.name': 'Ton prénom', 'set.namePh': 'pour l’accueil', 'set.sound': 'Bips', 'set.voice': 'Annonces vocales', 'set.voiceSub': 'Annonce exercice / pause', 'set.vibrate': 'Vibration', 'set.vibrateSub': 'À 3-2-1 et à la fin', 'set.keepAwake': 'Écran toujours allumé', 'set.keepAwakeSub': 'Aussi dans le menu – toujours pendant le minuteur', 'set.volume': 'Volume', 'set.test': 'Test', 'set.testBtn': 'Tester le son', 'tip.t': 'Astuce',
+    'hist.clear': 'Effacer l’historique', 'hist.confirm': 'Vraiment effacer l’historique ?',
+    't.copied': 'Lien copié', 't.copy': 'Copier le lien :', 't.imported': 'Workout importé', 't.favSaved': 'Enregistré en favori', 't.favTitle': 'Enregistrer le favori', 't.delConfirm': 'Supprimer « {name} » ?', 't.soundOn': 'Son activé', 't.soundOff': 'Son coupé', 't.locked': 'Verrouillé – maintiens le cadenas', 't.endConfirm': 'Terminer le workout ?', 't.empty': 'Le workout est vide',
+    'r.paused': 'Pause · touche pour continuer', 'r.rounds': 'Tours', 'r.lap': 'Tour', 'r.minusRound': '−1 tour', 'r.finish': 'Fini', 'r.unlock': 'Maintenir pour déverrouiller', 'r.next': 'Ensuite', 'r.finale': 'Final', 'r.giveAll': 'Donne tout', 'r.lastSplit': 'dernier tour {t} · touche = +1', 'r.tapPlus': 'touche = +1 tour', 'r.lapN': 'Tour {n}', 'r.cap': 'Cap {t}', 'r.of': 'sur {t}', 'r.metaRound': 'Tour <b>{r}</b>/{n}', 'r.metaSet': 'Série <b>{r}</b>/{n}', 'r.roundLabel': 'Tour {n}',
+    'd.title': 'Terminé', 'd.time': 'Temps', 'd.rounds': 'Tours', 'd.again': 'Encore', 'd.exit': 'Fini',
+    'k.prep': 'Prêt', 'k.work': 'Effort', 'k.rest': 'Pause', 'k.setrest': 'Pause série', 'k.cool': 'Retour au calme', 'k.up': 'Go',
+    'v.prep': 'Prépare-toi', 'v.work': 'Go', 'v.rest': 'Pause', 'v.setrest': 'Pause entre séries', 'v.cool': 'Retour au calme', 'v.up': 'Go', 'v.lastRound': 'Dernier tour !', 'v.roundN': 'Tour {n}', 'v.restThen': 'Pause. Ensuite : {name}', 'v.halfway': 'Mi-temps', 'v.done': 'Terminé ! Bravo !', 'v.test': 'C’est parti',
+  },
+  it: {
+    'tip.app': 'La tua musica continua: i suoni del timer si sovrappongono a Spotify & co., anche in silenzioso e a schermo bloccato. Volume con i tasti laterali.', 'priv.title': 'Privacy', 'priv.body': 'Nessun account, nessun server, nessun tracciamento. Impostazioni, preferiti e cronologia restano solo su questo dispositivo.', 'priv.deleteAll': 'Elimina tutti i dati', 'priv.deleteConfirm': 'Eliminare davvero tutti i dati? Impostazioni, preferiti e cronologia verranno rimossi da questo dispositivo.', 'priv.deleted': 'Tutti i dati eliminati',
+    'greet.night': 'Turno di notte', 'greet.morning': 'Buongiorno', 'greet.day': 'Si parte', 'greet.evening': 'Buonasera', 'greet.late': 'Allenamento tardivo',
+    'home.again': 'Ancora', 'home.favorites': 'Preferiti', 'home.favEmpty': 'Crea un allenamento nell’editor e tocca {star} – lo trovi qui per l’avvio rapido.', 'home.recent': 'Recenti', 'home.roundsN': '{n} round',
+    'wake.tap': 'Tocca una volta – poi lo schermo resta acceso', 'wake.off': 'Lo schermo può spegnersi', 'wake.on': 'Lo schermo resta sempre acceso', 'wake.pillOff': 'Lo schermo può bloccarsi', 'wake.pillOn': 'Schermo acceso',
+    'a.settings': 'Impostazioni', 'a.share': 'Condividi', 'a.delete': 'Elimina', 'a.start': 'Avvia', 'a.back': 'Indietro', 'a.saveFav': 'Salva nei preferiti', 'a.less': 'meno', 'a.more': 'più', 'a.color': 'Cambia colore', 'a.up': 'Sposta su', 'a.dup': 'Duplica', 'a.end': 'Termina', 'a.sound': 'Suono', 'a.lock': 'Blocca', 'a.pause': 'Pausa', 'a.next': 'Avanti', 'a.prev': 'Indietro',
+    'e.open': 'libero', 'e.start': 'Start', 'e.off': 'off', 'e.reset': 'Ripristina predefiniti', 'e.resetConfirm': 'Ripristinare tutte le impostazioni di questo timer?', 'e.resetDone': 'Ripristinato',
+    'w.round': 'round', 'w.rounds': 'round', 'w.set': 'serie', 'w.sets': 'serie', 'w.interval': 'intervallo', 'w.intervals': 'intervalli', 'w.pause': 'pausa',
+    'sum.stoppuhr': 'Conta in avanti · tempi sul giro con un tocco', 'sum.countdown': 'Conto alla rovescia fino a 0', 'sum.amrap': 'Conta i round toccando il contatore', 'sum.ftCap': 'Time cap {cap} · conta i round', 'sum.ftNo': 'Senza time cap · conta i round',
+    'f.prep': 'Preparazione', 'f.work': 'Lavoro', 'f.rest': 'Pausa', 'f.rounds': 'Round', 'f.sets': 'Serie', 'f.setRest': 'Pausa tra le serie', 'f.cool': 'Defaticamento', 'f.round': 'Durata del round', 'f.restRounds': 'Pausa tra i round', 'f.dur': 'Durata', 'f.limit': 'Limite di tempo', 'f.cap': 'Time cap (0 = nessuno)', 'f.repeats': 'Ripetizioni',
+    'iv.dur': 'Durata', 'iv.pause': 'Pausa', 'iv.add': 'Aggiungi intervallo', 'iv.n': 'Intervallo {n}', 'iv.restAfter': 'Pausa dopo {name}',
+    'p.classic': 'Classico 20/10 × 8', 'p.4sets': 'Tabata 4 serie',
+    'm.tabata': 'Tabata', 'm.tabata.sub': 'Lavoro / pausa alternati', 'm.runden': 'Round', 'm.runden.sub': 'EMOM · E2MOM · round', 'm.stoppuhr': 'Cronometro', 'm.stoppuhr.sub': 'Misura il tempo con i giri', 'm.intervalle': 'Intervalli', 'm.intervalle.sub': 'Crea la tua sequenza', 'm.countdown': 'Timer', 'm.countdown.sub': 'Timer semplice', 'm.amrap': 'AMRAP', 'm.amrap.sub': 'Più round possibili', 'm.fortime': 'For Time', 'm.fortime.sub': 'Il più veloce possibile',
+    's.cancel': 'Annulla', 's.done': 'Fatto', 's.save': 'Salva', 's.min': 'min', 's.sec': 'sec',
+    'set.title': 'Impostazioni', 'set.lang': 'Lingua', 'set.langAuto': 'Automatica ({name})', 'set.name': 'Il tuo nome', 'set.namePh': 'per il saluto', 'set.sound': 'Segnali acustici', 'set.voice': 'Annunci vocali', 'set.voiceSub': 'Annuncia esercizio / pausa', 'set.vibrate': 'Vibrazione', 'set.vibrateSub': 'A 3-2-1 e alla fine', 'set.keepAwake': 'Schermo sempre acceso', 'set.keepAwakeSub': 'Anche nel menu – sempre durante il timer', 'set.volume': 'Volume', 'set.test': 'Test', 'set.testBtn': 'Prova suono', 'tip.t': 'Suggerimento',
+    'hist.clear': 'Cancella cronologia', 'hist.confirm': 'Cancellare davvero la cronologia?',
+    't.copied': 'Link copiato', 't.copy': 'Copia link:', 't.imported': 'Allenamento importato', 't.favSaved': 'Salvato nei preferiti', 't.favTitle': 'Salva preferito', 't.delConfirm': 'Eliminare «{name}»?', 't.soundOn': 'Suono attivo', 't.soundOff': 'Suono disattivato', 't.locked': 'Bloccato – tieni premuto il lucchetto', 't.endConfirm': 'Terminare l’allenamento?', 't.empty': 'L’allenamento è vuoto',
+    'r.paused': 'Pausa · tocca per continuare', 'r.rounds': 'Round', 'r.lap': 'Giro', 'r.minusRound': '−1 round', 'r.finish': 'Fine', 'r.unlock': 'Tieni premuto per sbloccare', 'r.next': 'Poi', 'r.finale': 'Finale', 'r.giveAll': 'Dai tutto', 'r.lastSplit': 'ultimo round {t} · tocca = +1', 'r.tapPlus': 'tocca = +1 round', 'r.lapN': 'Giro {n}', 'r.cap': 'Cap {t}', 'r.of': 'di {t}', 'r.metaRound': 'Round <b>{r}</b>/{n}', 'r.metaSet': 'Serie <b>{r}</b>/{n}', 'r.roundLabel': 'Round {n}',
+    'd.title': 'Fatto', 'd.time': 'Tempo', 'd.rounds': 'Round', 'd.again': 'Ancora', 'd.exit': 'Fine',
+    'k.prep': 'Pronti', 'k.work': 'Lavoro', 'k.rest': 'Pausa', 'k.setrest': 'Pausa serie', 'k.cool': 'Defaticamento', 'k.up': 'Go',
+    'v.prep': 'Preparati', 'v.work': 'Via', 'v.rest': 'Pausa', 'v.setrest': 'Pausa tra le serie', 'v.cool': 'Defaticamento', 'v.up': 'Via', 'v.lastRound': 'Ultimo round!', 'v.roundN': 'Round {n}', 'v.restThen': 'Pausa. Poi {name}', 'v.halfway': 'Metà', 'v.done': 'Fatto! Grande!', 'v.test': 'Si parte',
+  },
+  es: {
+    'tip.app': 'Tu música sigue sonando: los sonidos del temporizador suenan sobre Spotify y demás, incluso en silencio y con la pantalla bloqueada. Volumen con los botones laterales.', 'priv.title': 'Privacidad', 'priv.body': 'Sin cuenta, sin servidor, sin seguimiento. Ajustes, favoritos e historial se quedan solo en este dispositivo.', 'priv.deleteAll': 'Borrar todos los datos', 'priv.deleteConfirm': '¿Borrar de verdad todos los datos? Se eliminarán ajustes, favoritos e historial de este dispositivo.', 'priv.deleted': 'Todos los datos borrados',
+    'greet.night': 'Turno de noche', 'greet.morning': 'Buenos días', 'greet.day': 'Vamos', 'greet.evening': 'Buenas tardes', 'greet.late': 'Sesión tardía',
+    'home.again': 'Otra vez', 'home.favorites': 'Favoritos', 'home.favEmpty': 'Crea un entrenamiento en el editor y toca {star} – aparecerá aquí para empezar rápido.', 'home.recent': 'Recientes', 'home.roundsN': '{n} rondas',
+    'wake.tap': 'Toca una vez – luego la pantalla sigue encendida', 'wake.off': 'La pantalla puede apagarse', 'wake.on': 'La pantalla siempre encendida', 'wake.pillOff': 'La pantalla puede bloquearse', 'wake.pillOn': 'Pantalla encendida',
+    'a.settings': 'Ajustes', 'a.share': 'Compartir', 'a.delete': 'Eliminar', 'a.start': 'Empezar', 'a.back': 'Atrás', 'a.saveFav': 'Guardar como favorito', 'a.less': 'menos', 'a.more': 'más', 'a.color': 'Cambiar color', 'a.up': 'Subir', 'a.dup': 'Duplicar', 'a.end': 'Terminar', 'a.sound': 'Sonido', 'a.lock': 'Bloquear', 'a.pause': 'Pausa', 'a.next': 'Siguiente', 'a.prev': 'Atrás',
+    'e.open': 'libre', 'e.start': 'Start', 'e.off': 'off', 'e.reset': 'Restablecer valores', 'e.resetConfirm': '¿Restablecer todos los ajustes de este temporizador?', 'e.resetDone': 'Restablecido',
+    'w.round': 'ronda', 'w.rounds': 'rondas', 'w.set': 'serie', 'w.sets': 'series', 'w.interval': 'intervalo', 'w.intervals': 'intervalos', 'w.pause': 'descanso',
+    'sum.stoppuhr': 'Cuenta hacia arriba · vueltas con un toque', 'sum.countdown': 'Cuenta atrás hasta 0', 'sum.amrap': 'Cuenta rondas tocando el contador', 'sum.ftCap': 'Time cap {cap} · contar rondas', 'sum.ftNo': 'Sin time cap · contar rondas',
+    'f.prep': 'Preparación', 'f.work': 'Trabajo', 'f.rest': 'Descanso', 'f.rounds': 'Rondas', 'f.sets': 'Series', 'f.setRest': 'Descanso entre series', 'f.cool': 'Vuelta a la calma', 'f.round': 'Duración de ronda', 'f.restRounds': 'Descanso entre rondas', 'f.dur': 'Duración', 'f.limit': 'Límite de tiempo', 'f.cap': 'Time cap (0 = sin)', 'f.repeats': 'Repeticiones',
+    'iv.dur': 'Duración', 'iv.pause': 'Descanso', 'iv.add': 'Añadir intervalo', 'iv.n': 'Intervalo {n}', 'iv.restAfter': 'Descanso tras {name}',
+    'p.classic': 'Clásico 20/10 × 8', 'p.4sets': 'Tabata 4 series',
+    'm.tabata': 'Tabata', 'm.tabata.sub': 'Trabajo / descanso alternos', 'm.runden': 'Rondas', 'm.runden.sub': 'EMOM · E2MOM · rondas', 'm.stoppuhr': 'Cronómetro', 'm.stoppuhr.sub': 'Mide el tiempo con vueltas', 'm.intervalle': 'Intervalos', 'm.intervalle.sub': 'Crea tu propia secuencia', 'm.countdown': 'Cuenta atrás', 'm.countdown.sub': 'Temporizador simple', 'm.amrap': 'AMRAP', 'm.amrap.sub': 'Máximas rondas posibles', 'm.fortime': 'For Time', 'm.fortime.sub': 'Lo más rápido posible',
+    's.cancel': 'Cancelar', 's.done': 'Listo', 's.save': 'Guardar', 's.min': 'min', 's.sec': 'seg',
+    'set.title': 'Ajustes', 'set.lang': 'Idioma', 'set.langAuto': 'Automático ({name})', 'set.name': 'Tu nombre', 'set.namePh': 'para el saludo', 'set.sound': 'Pitidos', 'set.voice': 'Avisos por voz', 'set.voiceSub': 'Anuncia ejercicio / descanso', 'set.vibrate': 'Vibración', 'set.vibrateSub': 'En 3-2-1 y al final', 'set.keepAwake': 'Pantalla siempre encendida', 'set.keepAwakeSub': 'También en el menú – siempre durante el temporizador', 'set.volume': 'Volumen', 'set.test': 'Prueba', 'set.testBtn': 'Probar sonido', 'tip.t': 'Consejo',
+    'hist.clear': 'Borrar historial', 'hist.confirm': '¿Borrar de verdad el historial?',
+    't.copied': 'Enlace copiado', 't.copy': 'Copiar enlace:', 't.imported': 'Entrenamiento importado', 't.favSaved': 'Guardado como favorito', 't.favTitle': 'Guardar favorito', 't.delConfirm': '¿Eliminar «{name}»?', 't.soundOn': 'Sonido activado', 't.soundOff': 'Sonido desactivado', 't.locked': 'Bloqueado – mantén pulsado el candado', 't.endConfirm': '¿Terminar el entrenamiento?', 't.empty': 'El entrenamiento está vacío',
+    'r.paused': 'Pausa · toca para seguir', 'r.rounds': 'Rondas', 'r.lap': 'Vuelta', 'r.minusRound': '−1 ronda', 'r.finish': 'Fin', 'r.unlock': 'Mantén pulsado para desbloquear', 'r.next': 'Después', 'r.finale': 'Final', 'r.giveAll': 'Dalo todo', 'r.lastSplit': 'última ronda {t} · toca = +1', 'r.tapPlus': 'toca = +1 ronda', 'r.lapN': 'Vuelta {n}', 'r.cap': 'Cap {t}', 'r.of': 'de {t}', 'r.metaRound': 'Ronda <b>{r}</b>/{n}', 'r.metaSet': 'Serie <b>{r}</b>/{n}', 'r.roundLabel': 'Ronda {n}',
+    'd.title': 'Hecho', 'd.time': 'Tiempo', 'd.rounds': 'Rondas', 'd.again': 'Otra vez', 'd.exit': 'Fin',
+    'k.prep': 'Listos', 'k.work': 'Trabajo', 'k.rest': 'Descanso', 'k.setrest': 'Descanso serie', 'k.cool': 'Vuelta a la calma', 'k.up': 'Go',
+    'v.prep': 'Prepárate', 'v.work': 'Ya', 'v.rest': 'Descanso', 'v.setrest': 'Descanso entre series', 'v.cool': 'Vuelta a la calma', 'v.up': 'Ya', 'v.lastRound': '¡Última ronda!', 'v.roundN': 'Ronda {n}', 'v.restThen': 'Descanso. Después {name}', 'v.halfway': 'Mitad', 'v.done': '¡Hecho! ¡Muy bien!', 'v.test': 'Vamos',
+  },
+  pt: {
+    'tip.app': 'A tua música continua: os sons do temporizador tocam por cima do Spotify e afins, mesmo em silêncio e com o ecrã bloqueado. Volume com os botões laterais.', 'priv.title': 'Privacidade', 'priv.body': 'Sem conta, sem servidor, sem rastreio. Definições, favoritos e histórico ficam apenas neste dispositivo.', 'priv.deleteAll': 'Apagar todos os dados', 'priv.deleteConfirm': 'Apagar mesmo todos os dados? Definições, favoritos e histórico serão removidos deste dispositivo.', 'priv.deleted': 'Todos os dados apagados',
+    'greet.night': 'Turno da noite', 'greet.morning': 'Bom dia', 'greet.day': 'Vamos lá', 'greet.evening': 'Boa noite', 'greet.late': 'Treino tardio',
+    'home.again': 'Outra vez', 'home.favorites': 'Favoritos', 'home.favEmpty': 'Cria um treino no editor e toca em {star} – aparece aqui para um início rápido.', 'home.recent': 'Recentes', 'home.roundsN': '{n} rondas',
+    'wake.tap': 'Toca uma vez – depois o ecrã fica ligado', 'wake.off': 'O ecrã pode desligar-se', 'wake.on': 'O ecrã fica sempre ligado', 'wake.pillOff': 'O ecrã pode bloquear', 'wake.pillOn': 'Ecrã ligado',
+    'a.settings': 'Definições', 'a.share': 'Partilhar', 'a.delete': 'Eliminar', 'a.start': 'Iniciar', 'a.back': 'Voltar', 'a.saveFav': 'Guardar como favorito', 'a.less': 'menos', 'a.more': 'mais', 'a.color': 'Mudar cor', 'a.up': 'Subir', 'a.dup': 'Duplicar', 'a.end': 'Terminar', 'a.sound': 'Som', 'a.lock': 'Bloquear', 'a.pause': 'Pausa', 'a.next': 'Seguinte', 'a.prev': 'Voltar',
+    'e.open': 'livre', 'e.start': 'Start', 'e.off': 'off', 'e.reset': 'Repor predefinições', 'e.resetConfirm': 'Repor todas as definições deste temporizador?', 'e.resetDone': 'Reposto',
+    'w.round': 'ronda', 'w.rounds': 'rondas', 'w.set': 'série', 'w.sets': 'séries', 'w.interval': 'intervalo', 'w.intervals': 'intervalos', 'w.pause': 'pausa',
+    'sum.stoppuhr': 'Conta para cima · voltas com um toque', 'sum.countdown': 'Contagem decrescente até 0', 'sum.amrap': 'Conta as rondas tocando no contador', 'sum.ftCap': 'Time cap {cap} · contar rondas', 'sum.ftNo': 'Sem time cap · contar rondas',
+    'f.prep': 'Preparação', 'f.work': 'Trabalho', 'f.rest': 'Pausa', 'f.rounds': 'Rondas', 'f.sets': 'Séries', 'f.setRest': 'Pausa entre séries', 'f.cool': 'Retorno à calma', 'f.round': 'Duração da ronda', 'f.restRounds': 'Pausa entre rondas', 'f.dur': 'Duração', 'f.limit': 'Limite de tempo', 'f.cap': 'Time cap (0 = sem)', 'f.repeats': 'Repetições',
+    'iv.dur': 'Duração', 'iv.pause': 'Pausa', 'iv.add': 'Adicionar intervalo', 'iv.n': 'Intervalo {n}', 'iv.restAfter': 'Pausa depois de {name}',
+    'p.classic': 'Clássico 20/10 × 8', 'p.4sets': 'Tabata 4 séries',
+    'm.tabata': 'Tabata', 'm.tabata.sub': 'Trabalho / pausa alternados', 'm.runden': 'Rondas', 'm.runden.sub': 'EMOM · E2MOM · rondas', 'm.stoppuhr': 'Cronómetro', 'm.stoppuhr.sub': 'Medir o tempo com voltas', 'm.intervalle': 'Intervalos', 'm.intervalle.sub': 'Cria a tua sequência', 'm.countdown': 'Temporizador', 'm.countdown.sub': 'Temporizador simples', 'm.amrap': 'AMRAP', 'm.amrap.sub': 'O máximo de rondas possível', 'm.fortime': 'For Time', 'm.fortime.sub': 'O mais rápido possível',
+    's.cancel': 'Cancelar', 's.done': 'OK', 's.save': 'Guardar', 's.min': 'min', 's.sec': 'seg',
+    'set.title': 'Definições', 'set.lang': 'Idioma', 'set.langAuto': 'Automático ({name})', 'set.name': 'O teu nome', 'set.namePh': 'para a saudação', 'set.sound': 'Sinais sonoros', 'set.voice': 'Anúncios de voz', 'set.voiceSub': 'Anuncia exercício / pausa', 'set.vibrate': 'Vibração', 'set.vibrateSub': 'No 3-2-1 e no fim', 'set.keepAwake': 'Ecrã sempre ligado', 'set.keepAwakeSub': 'Também no menu – sempre durante o temporizador', 'set.volume': 'Volume', 'set.test': 'Teste', 'set.testBtn': 'Testar som', 'tip.t': 'Dica',
+    'hist.clear': 'Apagar histórico', 'hist.confirm': 'Apagar mesmo o histórico?',
+    't.copied': 'Link copiado', 't.copy': 'Copiar link:', 't.imported': 'Treino importado', 't.favSaved': 'Guardado como favorito', 't.favTitle': 'Guardar favorito', 't.delConfirm': 'Eliminar «{name}»?', 't.soundOn': 'Som ligado', 't.soundOff': 'Som desligado', 't.locked': 'Bloqueado – mantém o cadeado premido', 't.endConfirm': 'Terminar o treino?', 't.empty': 'O treino está vazio',
+    'r.paused': 'Pausa · toca para continuar', 'r.rounds': 'Rondas', 'r.lap': 'Volta', 'r.minusRound': '−1 ronda', 'r.finish': 'Fim', 'r.unlock': 'Mantém premido para desbloquear', 'r.next': 'Depois', 'r.finale': 'Final', 'r.giveAll': 'Dá tudo', 'r.lastSplit': 'última ronda {t} · toca = +1', 'r.tapPlus': 'toca = +1 ronda', 'r.lapN': 'Volta {n}', 'r.cap': 'Cap {t}', 'r.of': 'de {t}', 'r.metaRound': 'Ronda <b>{r}</b>/{n}', 'r.metaSet': 'Série <b>{r}</b>/{n}', 'r.roundLabel': 'Ronda {n}',
+    'd.title': 'Feito', 'd.time': 'Tempo', 'd.rounds': 'Rondas', 'd.again': 'Outra vez', 'd.exit': 'Fim',
+    'k.prep': 'Prontos', 'k.work': 'Trabalho', 'k.rest': 'Pausa', 'k.setrest': 'Pausa série', 'k.cool': 'Retorno à calma', 'k.up': 'Go',
+    'v.prep': 'Prepara-te', 'v.work': 'Já', 'v.rest': 'Pausa', 'v.setrest': 'Pausa entre séries', 'v.cool': 'Retorno à calma', 'v.up': 'Já', 'v.lastRound': 'Última ronda!', 'v.roundN': 'Ronda {n}', 'v.restThen': 'Pausa. A seguir {name}', 'v.halfway': 'Metade', 'v.done': 'Feito! Muito bem!', 'v.test': 'Vamos lá',
+  },
+};
+
+// language of the phone/browser, first supported match; fallback English
+export function deviceLang() {
+  for (const l of navigator.languages || [navigator.language || 'en']) {
+    const code = String(l).slice(0, 2).toLowerCase();
+    if (LANGS[code]) return code;
+  }
+  return 'en';
+}
+
+export function lang() {
+  const s = settings.get().lang;
+  return s && LANGS[s] ? s : deviceLang();
+}
+
+export const locale = () => LANGS[lang()].locale;
+export const voiceLang = () => LANGS[lang()].voice;
+
+export function t(key, vars) {
+  let s = D[lang()][key] ?? D.de[key] ?? key;
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+
+// singular/plural word helper: tw('round', 3) → 'Runden'
+export const tw = (word, n) => t(n === 1 ? 'w.' + word : 'w.' + word + 's');

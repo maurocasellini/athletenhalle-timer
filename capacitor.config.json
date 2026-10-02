@@ -1,0 +1,13 @@
+{
+  "appId": "com.maurocasellini.grit",
+  "appName": "GRIT",
+  "webDir": "www",
+  "backgroundColor": "#060607",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#060607",
+    "scrollEnabled": true,
+    "allowsLinkPreview": false,
+    "preferredContentMode": "mobile"
+  }
+}

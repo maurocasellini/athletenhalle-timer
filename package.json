@@ -1,0 +1,18 @@
+{
+  "name": "grit-workout-timer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GRIT – Workout Timer (iOS app, Capacitor)",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios",
+    "serve": "python3 -m http.server 8000 -d www"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}
