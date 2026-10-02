@@ -112,7 +112,7 @@ function renderHome() {
   app.innerHTML = `
     <header class="topbar">
       <button class="round-btn" data-act="settings" aria-label="${t('a.settings')}">${I.user}</button>
-      <span class="wordmark">GRIT<i>.</i></span>
+      <span class="wordmark">GRIT</span>
       <span></span>
     </header>
     <main class="home">

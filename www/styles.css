@@ -55,8 +55,9 @@ svg { display: block; }
   background: linear-gradient(var(--bg) 65%, #0000);
 }
 .topbar h1 { margin: 0; font: italic 800 26px/1 var(--display); text-transform: uppercase; letter-spacing: .01em; text-align: center; }
-.wordmark { font: italic 900 30px/1 var(--display); letter-spacing: .14em; color: #fff; text-align: center; }
-.wordmark i { color: var(--accent); font-style: inherit; letter-spacing: 0; }
+.wordmark { position: relative; display: inline-block; justify-self: center; padding-bottom: 7px; font: italic 900 30px/1 var(--display); letter-spacing: -.01em; color: #fff; }
+/* the yellow slanted bar from the app icon */
+.wordmark::after { content: ''; position: absolute; left: -2px; right: -4px; bottom: 0; height: 5px; background: var(--accent); transform: skewX(-16deg); }
 
 .topbar > :last-child { justify-self: end; }
 .topbar-right { display: flex; gap: 10px; justify-self: end; }
