@@ -27,7 +27,7 @@ public class StorePlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     /// Must match the in-app purchase created in App Store Connect (type: Non-Consumable).
-    static let productID = "com.maurocasellini.grit.full"
+    static let productID = "com.cmventures.grit.full"
     static let trialDays: Double = 3
 
     private var updatesTask: Task<Void, Never>?

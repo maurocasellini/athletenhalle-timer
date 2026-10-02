@@ -48,7 +48,7 @@ npx cap open ios        # öffnet Xcode
 
 In Xcode:
 1. Links **App** (blaues Icon) → Target **App** → Tab **Signing & Capabilities**
-2. **Team** auswählen (dein Developer-Account). Bundle-ID ist `com.maurocasellini.grit`; bei Bedarf ändern (auch in `capacitor.config.json`).
+2. **Team** auswählen (dein Developer-Account). Bundle-ID ist `com.cmventures.grit`; bei Bedarf ändern (auch in `capacitor.config.json`).
 3. Prüfen, dass unter Capabilities **Background Modes → Audio** aktiv ist (steht bereits in der Info.plist; falls Xcode es nicht anzeigt: „+ Capability“ → Background Modes → Audio anhaken).
 4. iPhone per Kabel anschließen, oben als Ziel wählen → **▶ Run**.
    Beim ersten Mal auf dem iPhone: Einstellungen → Datenschutz & Sicherheit → Entwicklermodus an.

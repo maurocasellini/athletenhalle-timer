@@ -10,7 +10,7 @@
 | Kategorie | Gesundheit und Fitness (Health & Fitness) |
 | Altersfreigabe | 4+ (keine sensiblen Inhalte) |
 | Preis | Gratis-Download, 3 Tage Test, dann In-App-Kauf **CHF 10.00** einmalig |
-| Bundle-ID | com.maurocasellini.grit |
+| Bundle-ID | com.cmventures.grit |
 | Datenschutz-URL | (öffentliche URL von `docs/privacy.html`) |
 | Support-URL | kann dieselbe Seite sein |
 
@@ -20,7 +20,7 @@
 |---|---|
 | Typ | **Nicht-verbrauchbar** (Non-Consumable) |
 | Referenzname | GRIT Vollversion |
-| Produkt-ID | **`com.maurocasellini.grit.full`** (muss genau so heißen, steht so im Code) |
+| Produkt-ID | **`com.cmventures.grit.full`** (muss genau so heißen, steht so im Code) |
 | Preis | CHF 10.00 (Apple rechnet die anderen Länder automatisch um) |
 | Familienfreigabe | **Ein** |
 | Anzeigename / Beschreibung DE | GRIT Vollversion / Alle Timer ohne Einschränkung – einmalig, kein Abo. |
@@ -137,7 +137,7 @@ No account or login is required. The app collects no data and makes no network r
 
 Monetisation: all features are free for 3 days after first launch. After that, starting a
 workout shows a paywall for a one-time non-consumable in-app purchase "GRIT Full Version"
-(com.maurocasellini.grit.full, Family Sharing enabled). "Restore purchases" and "Redeem code"
+(com.cmventures.grit.full, Family Sharing enabled). "Restore purchases" and "Redeem code"
 are on the paywall and in Settings. To see the paywall immediately in review, it also opens
 from the banner on the home screen and from Settings → GRIT Full Version.
 ```

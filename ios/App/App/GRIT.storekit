@@ -20,7 +20,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.maurocasellini.grit.full",
+      "productID" : "com.cmventures.grit.full",
       "referenceName" : "GRIT Vollversion",
       "type" : "NonConsumable"
     }
