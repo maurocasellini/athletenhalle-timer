@@ -193,6 +193,11 @@ function renderHome() {
       </section>`
           : ''
       }
+      <button class="ferdi-toggle ${settings.get().ferdi ? 'on' : ''}" data-act="ferdi" aria-pressed="${settings.get().ferdi}">
+        <img class="ferdi-avatar" src="/brand/ferdi/avatar.webp" alt="" onerror="this.remove()">
+        <span class="ferdi-text"><b>${t('ferdi.title')}</b><small>${t('ferdi.sub')}</small></span>
+        <span class="ferdi-switch"><i></i></span>
+      </button>
       <p class="wake-note" id="wake-note"></p>
     </main>`;
   bindWakeNote();
@@ -581,6 +586,14 @@ const actions = {
   home: () => go('/'),
   settings: openSettings,
   'sheet-close': closeSheet,
+  ferdi: () => {
+    const on = !settings.get().ferdi;
+    settings.set({ ferdi: on });
+    unlockAudio(); // the tap is a gesture: also unlocks speech on iOS
+    renderHome();
+    if (on) speak(t('fv.on'), { hype: true });
+    else toast(t('ferdi.off'));
+  },
   'quick-last': () => {
     const h = history.all().find((x) => x.cfg && MODES[x.mode]);
     if (h) startRun(h.mode, mergeCfg(h.mode, h.cfg), h.title);
@@ -791,13 +804,14 @@ function renderRun() {
   const isStopwatch = program.laps;
 
   app.innerHTML = `
-    <div class="run" id="run">
+    <div class="run ${settings.get().ferdi ? 'ferdi' : ''}" id="run">
       <div class="run-bg"></div>
       <div class="run-drain" id="drain"></div>
       <header class="run-top">
         <button class="round-btn glass" data-run="close" aria-label="${t('a.end')}">${I.close}</button>
         <div class="run-title">
           <b>${esc(current.title)}</b>
+          ${settings.get().ferdi ? `<span class="ferdi-badge">${t('ferdi.title')}</span>` : ''}
           <span class="wake-pill" id="wake-pill"></span>
         </div>
         <div class="topbar-right">
@@ -807,6 +821,7 @@ function renderRun() {
       </header>
 
       <div class="run-main" data-run="toggle-area">
+        ${settings.get().ferdi ? '<div class="ferdi-pic"><img id="ferdi-img" alt="Ferdi" src="/brand/ferdi/go.webp"></div>' : ''}
         <div class="meta" id="meta"></div>
         <div class="phase" id="phase"></div>
         <div class="clock">
@@ -862,6 +877,7 @@ function renderRun() {
     totalRem: $('total-rem'),
     toggle: $('toggle'),
     done: $('done'),
+    ferdiImg: $('ferdi-img'),
     total,
     last: {},
   };
@@ -876,7 +892,14 @@ function renderRun() {
   engine = new Engine(program, {
     segment: onSegment,
     count: (n, s) => {
-      cue.count(n);
+      const ferdi = settings.get().ferdi;
+      const nx = engine.segs[engine.idx + 1];
+      // Ferdi: 3 s before the next work phase starts, shout instead of the first two beeps
+      if (ferdi && n === 3 && nx && (nx.kind === 'work' || nx.kind === 'up')) {
+        speak(t('fv.soon'), { hype: true });
+        setFerdiPic('soon');
+      }
+      if (!(ferdi && n > 1 && nx && (nx.kind === 'work' || nx.kind === 'up'))) cue.count(n);
       // pulse the digits on 3-2-1
       runView.time.classList.remove('pulse');
       void runView.time.offsetWidth;
@@ -900,6 +923,7 @@ function onSegment(seg, idx, { silent }) {
   runView.root.classList.remove('flash');
   void runView.root.offsetWidth;
   runView.root.classList.add('flash');
+  setFerdiPic(seg.kind === 'prep' ? 'go' : seg.kind === 'work' || seg.kind === 'up' ? 'work' : 'pause');
   if (silent) return;
   const segs = engine.segs;
   const isWork = seg.kind === 'work' || seg.kind === 'up';
@@ -917,8 +941,30 @@ function onSegment(seg, idx, { silent }) {
     const nx = segs[idx + 1];
     if (nx && nx.speakName) text = t('v.restThen', { name: nx.label });
   }
+  if (settings.get().ferdi) {
+    if (seg.kind === 'prep' || idx === 0) return setTimeout(() => speak(t('fv.go'), { hype: true }), 250);
+    if (seg.kind === 'rest' || seg.kind === 'setrest') return setTimeout(() => speak(t('fv.pause'), { hype: true }), 250);
+  }
   // give the beep a moment before the voice
   setTimeout(() => speak(text), 350);
+}
+
+// Ferdi mode: a picture of Ferdi for every phase (go · work · soon · pause · done)
+const FERDI_PICS = ['go', 'work', 'soon', 'pause', 'done'];
+let ferdiPreloaded = false;
+function setFerdiPic(key) {
+  const img = runView && runView.ferdiImg;
+  if (!img) return;
+  if (!ferdiPreloaded) {
+    ferdiPreloaded = true;
+    FERDI_PICS.forEach((k) => (new Image().src = `/brand/ferdi/${k}.webp`));
+  }
+  const src = `/brand/ferdi/${key}.webp`;
+  if (img.getAttribute('src') === src) return;
+  img.setAttribute('src', src);
+  img.parentElement.classList.remove('pop');
+  void img.offsetWidth;
+  img.parentElement.classList.add('pop');
 }
 
 function segMeta(seg) {
@@ -1016,7 +1062,7 @@ function updateRun() {
 function onDone() {
   if (!runView) return;
   cue.done();
-  setTimeout(() => speak(t('v.done')), 900);
+  setTimeout(() => (settings.get().ferdi ? speak(t('fv.done'), { hype: true }) : speak(t('v.done'))), 900);
   const e = engine;
   const dur = e.totalElapsed();
   history.add({ mode: current.mode, title: current.title, cfg: current.cfg, dur, rounds: e.rounds || e.laps.length || 0 });
@@ -1034,7 +1080,7 @@ function onDone() {
   v.done.innerHTML = `
     <div class="done-card">
       <img class="done-logo" src="/brand/logo.png" alt="" onerror="this.remove()">
-      <div class="done-emoji">${I.check}</div>
+      ${settings.get().ferdi ? '<img class="ferdi-done" src="/brand/ferdi/done.webp" alt="Ferdi">' : `<div class="done-emoji">${I.check}</div>`}
       <h2>${t('d.title')}<span>.</span></h2>
       <p class="done-sub">${esc(current.title)} · ${new Date().toLocaleDateString(locale(), { weekday: 'long' })}</p>
       <div class="done-stats">

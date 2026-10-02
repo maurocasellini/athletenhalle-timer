@@ -124,17 +124,18 @@ function pickVoice() {
 }
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = pickVoice;
 
-export function speak(text) {
-  if (!settings.get().voice || !('speechSynthesis' in window) || !text) return;
+// opts.hype: Ferdi mode — always spoken (even with voice off), faster, higher, full volume
+export function speak(text, opts = {}) {
+  if ((!settings.get().voice && !opts.hype) || !('speechSynthesis' in window) || !text) return;
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = voiceLang();
     if (voiceFor !== u.lang) pickVoice();
     if (voice || pickVoice()) u.voice = voice;
-    u.rate = 1.05;
-    u.pitch = 1;
-    u.volume = settings.get().volume ?? 0.9;
+    u.rate = opts.hype ? 1.2 : 1.05;
+    u.pitch = opts.hype ? 1.25 : 1;
+    u.volume = opts.hype ? 1 : settings.get().volume ?? 0.9;
     speechSynthesis.speak(u);
   } catch {}
 }
